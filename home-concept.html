@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUSO Adventures — Home Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fffaf3;
+    --header-top:#ffe9cf;
+    --card-bg:#ffffff;
+    --text:#2a2438;
+    --primary:#e8503f;
+    --secondary:#f2994a;
+    --tertiary:#0ea5a0;
+    --tertiary-deep:#0b6e68;
+    --quaternary:#5b4b8a;
+    --quaternary-light:#8a76c9;
+    --raised-bg:#2a2438;
+    --raised-fg:#ffffff;
+    --shadow-rgb:42,36,56;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:#e2ddd3;
+    color:var(--text);
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:4vh 20px;
+  }
+  h1,h2,h3,.display{ font-family:'Fredoka', sans-serif; }
+  .page-note{
+    position:fixed; top:16px; left:16px; font-size:0.8rem; opacity:0.55;
+    font-family:'Nunito',sans-serif; max-width:230px; line-height:1.4; color:#2a2438;
+  }
+
+  /* ---------- TIME CONTROL ---------- */
+  .time-control{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    background:#fff; border-radius:20px; padding:14px 20px; width:min(420px, 92vw);
+    box-shadow:0 12px 32px rgba(0,0,0,0.18); z-index:50; font-family:'Nunito',sans-serif;
+  }
+  .time-control-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .time-control-label{ font-size:0.82rem; font-weight:700; color:#2a2438; }
+  .time-control-value{ font-size:0.82rem; font-weight:700; color:#e8503f; font-family:'Fredoka',sans-serif; }
+  .time-slider{ width:100%; accent-color:#e8503f; }
+  .time-presets{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+  .time-preset-btn{
+    flex:1; min-width:70px; padding:7px 8px; border-radius:10px; border:none;
+    background:#f2ede4; color:#2a2438; font-size:0.72rem; font-weight:700; cursor:pointer;
+    font-family:'Nunito',sans-serif; transition:background .15s;
+  }
+  .time-preset-btn:hover{ background:#e8e0d2; }
+  .time-preset-btn.play{ background:#2a2438; color:#fff; }
+
+  .phone{
+    width:390px; max-width:100%; height:844px; max-height:80vh;
+    background:var(--bg); border-radius:44px; overflow:hidden;
+    box-shadow:0 30px 70px rgba(0,0,0,0.35), 0 0 0 10px #1a1622;
+    position:relative; display:flex; flex-direction:column;
+    transition:background-color .35s ease;
+  }
+  .scroll-area{ flex:1; min-height:0; overflow-y:auto; padding-bottom:100px; }
+  .scroll-area::-webkit-scrollbar{ display:none; }
+
+  /* ---------- STATUS BAR ---------- */
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px 4px; font-weight:700; font-size:0.85rem; color:var(--text);
+    position:relative; z-index:2; transition:color .35s ease;
+  }
+
+  /* ---------- ABSTRACT SKY BAND ----------
+     Not a literal window — just a gradient field + a single orb (sun/moon)
+     on an elliptical arc + a few star dots, all driven by the time value.
+     This whole block sits behind the greeting content. */
+  .sky-band{
+    position:relative; height:190px; overflow:hidden; transition:background .35s ease;
+  }
+  .sky-stars{ position:absolute; inset:0; transition:opacity .35s ease; }
+  .star{ position:absolute; border-radius:50%; background:#fff; }
+  .sky-orb{
+    position:absolute; width:34px; height:34px; border-radius:50%;
+    transform:translate(-50%,-50%); transition:background .35s ease, box-shadow .35s ease, left .5s ease, top .5s ease;
+  }
+  .home-header-inner{
+    position:absolute; inset:0; padding:14px 22px 0; z-index:2;
+  }
+
+  .greet-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .greet-row h1{ font-size:1.5rem; color:var(--text); transition:color .35s ease; }
+  .greet-row .wave{ display:inline-block; animation:wave 2.2s infinite; transform-origin:70% 70%; }
+  @keyframes wave{ 0%,100%{transform:rotate(0);} 15%{transform:rotate(14deg);} 30%{transform:rotate(-8deg);} 45%{transform:rotate(14deg);} 60%{transform:rotate(0);} }
+  .greet-sub{ opacity:0.68; font-size:0.92rem; margin-top:3px; color:var(--text); transition:color .35s ease; }
+  .weather-line{
+    display:flex; align-items:center; gap:6px; margin-top:8px; font-size:0.8rem;
+    opacity:0.62; color:var(--text); font-weight:600; transition:color .35s ease;
+  }
+  .avatar{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--primary), var(--quaternary));
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Fredoka',sans-serif; font-weight:700; font-size:1rem;
+    box-shadow:0 4px 12px rgba(var(--shadow-rgb),0.3);
+  }
+
+  .search-bar{
+    margin-top:16px; background:var(--card-bg); border-radius:16px; padding:13px 16px;
+    display:flex; align-items:center; gap:10px;
+    box-shadow:0 6px 18px rgba(var(--shadow-rgb),0.1);
+    transition:background-color .35s ease;
+  }
+  .search-bar input{
+    border:none; outline:none; flex:1; font-family:'Nunito',sans-serif;
+    font-size:0.92rem; background:transparent; color:var(--text); transition:color .35s ease;
+  }
+  .search-bar input::placeholder{ color:var(--text); opacity:0.4; }
+  .icon-btn{
+    width:34px; height:34px; border-radius:10px; display:flex; align-items:center;
+    justify-content:center; background:var(--bg); flex-shrink:0; color:var(--text);
+    transition:background-color .35s ease, color .35s ease;
+  }
+
+  /* ---------- AI PICK CARD ---------- */
+  .section{ padding:22px 22px 4px; }
+  .ai-pick{
+    position:relative; border-radius:22px; overflow:hidden; height:220px;
+    background:linear-gradient(135deg, var(--primary), var(--secondary) 55%, var(--quaternary));
+    display:flex; flex-direction:column; justify-content:flex-end; padding:20px;
+    color:#fff; box-shadow:0 14px 30px rgba(var(--shadow-rgb),0.3);
+    transition:background .35s ease;
+  }
+  .ai-pick::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.25), transparent 45%),
+      linear-gradient(0deg, rgba(0,0,0,0.55), rgba(0,0,0,0) 60%);
+  }
+  .ai-pick > *{ position:relative; z-index:1; }
+  .ai-tag{
+    display:inline-flex; align-items:center; gap:6px; align-self:flex-start;
+    background:rgba(255,255,255,0.22); backdrop-filter:blur(6px);
+    padding:6px 12px; border-radius:999px; font-size:0.72rem; font-weight:700;
+    margin-bottom:auto;
+  }
+  .ai-pick h2{ font-size:1.4rem; margin-bottom:4px; }
+  .ai-pick p{ font-size:0.85rem; opacity:0.92; line-height:1.4; max-width:280px; }
+  .ai-pick .meta{ display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.8rem; font-weight:700; }
+
+  /* ---------- CREW ---------- */
+  .crew-row{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+  .crew-label{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:1.02rem; color:var(--text); transition:color .35s ease; }
+  .crew-sub{ font-size:0.82rem; opacity:0.6; margin-top:2px; color:var(--text); transition:color .35s ease; }
+  .crew-stack{ display:flex; align-items:center; cursor:pointer; }
+  .crew-stack .ca{
+    width:38px; height:38px; border-radius:50%; border:3px solid var(--bg);
+    margin-left:-12px; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Fredoka',sans-serif; font-weight:700; font-size:0.82rem;
+    box-shadow:0 3px 8px rgba(var(--shadow-rgb),0.15); transition:border-color .35s ease;
+  }
+  .crew-stack .ca:first-child{ margin-left:0; }
+  .crew-stack .ca.c1{ background:linear-gradient(135deg,var(--primary),var(--secondary)); }
+  .crew-stack .ca.c2{ background:linear-gradient(135deg,var(--tertiary),var(--tertiary-deep)); }
+  .crew-stack .ca.c3{ background:linear-gradient(135deg,var(--quaternary),var(--quaternary-light)); }
+  .crew-stack .more{ background:var(--raised-bg); color:var(--raised-fg); font-size:0.72rem; }
+
+  /* ---------- TRENDING GRID ---------- */
+  .section-title-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .section-title-row h3{ font-size:1.05rem; color:var(--text); transition:color .35s ease; }
+  .see-all{ font-size:0.8rem; font-weight:700; color:var(--primary); transition:color .35s ease; }
+  .trend-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .trend-card{
+    background:var(--card-bg); border-radius:16px; overflow:hidden;
+    box-shadow:0 6px 16px rgba(var(--shadow-rgb),0.1); transition:background-color .35s ease;
+  }
+  .trend-img{ height:88px; display:flex; align-items:flex-end; padding:8px; font-size:1.6rem; }
+  .trend-card .tc-body{ padding:10px 12px 12px; }
+  .trend-card .tc-name{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:0.88rem; color:var(--text); transition:color .35s ease; }
+  .trend-card .tc-meta{ font-size:0.72rem; opacity:0.6; margin-top:2px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; color:var(--text); transition:color .35s ease; }
+  .tc-rating{ color:var(--secondary); font-weight:700; }
+
+  /* ---------- FRIENDS ACTIVITY ---------- */
+  .activity-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.08); transition:border-color .35s ease; }
+  .activity-row:last-child{ border-bottom:none; }
+  .act-avatar{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Fredoka',sans-serif; font-weight:700; font-size:0.75rem;
+  }
+  .act-body{ flex:1; font-size:0.85rem; line-height:1.35; color:var(--text); transition:color .35s ease; }
+  .act-body b{ font-family:'Fredoka',sans-serif; }
+  .act-time{ font-size:0.72rem; opacity:0.5; white-space:nowrap; color:var(--text); transition:color .35s ease; }
+
+  /* ---------- BOTTOM NAV ---------- */
+  .tabbar-wrap{ position:absolute; left:0; right:0; bottom:0; padding:0 18px 22px; }
+  .tabbar{
+    background:var(--card-bg); border-radius:999px; padding:8px 10px;
+    display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 12px 30px rgba(var(--shadow-rgb),0.22);
+    position:relative; transition:background-color .35s ease;
+  }
+  .tab-item{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:8px 10px; border-radius:14px; color:var(--text); opacity:0.42;
+    font-size:0.66rem; font-weight:700; flex:1; cursor:pointer; transition:color .35s ease;
+  }
+  .tab-item svg{ width:21px; height:21px; }
+  .tab-item.active{ color:var(--primary); opacity:1; }
+  .tab-item.raised{
+    margin-top:-30px; background:var(--raised-bg); color:var(--raised-fg); opacity:1; border-radius:50%;
+    width:54px; height:54px; padding:0; align-items:center; justify-content:center;
+    box-shadow:0 8px 18px rgba(var(--shadow-rgb),0.4); flex:0 0 54px; transition:background-color .35s ease;
+  }
+  .tab-item.raised svg{ width:24px; height:24px; }
+  .tab-item.raised span{ display:none; }
+
+  @media (max-width:430px){
+    body{ padding:0; }
+    .phone{ width:100vw; height:100vh; max-height:100vh; border-radius:0; box-shadow:none; }
+    .time-control{ bottom:0; border-radius:20px 20px 0 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-note">Concept exploration — the sky band is an abstract gradient + orb, not a literal window. Drag the slider below to move through the day.</div>
+
+<div class="phone" id="phone">
+  <div class="scroll-area">
+    <div class="statusbar" id="statusbar">
+      <span id="statusbar-time">9:41</span>
+      <span>●●●●&nbsp;&nbsp;📶&nbsp;&nbsp;🔋</span>
+    </div>
+
+    <div class="sky-band" id="sky-band">
+      <div class="sky-stars" id="sky-stars">
+        <div class="star" style="width:2px;height:2px; top:14%; left:12%;"></div>
+        <div class="star" style="width:3px;height:3px; top:22%; left:78%;"></div>
+        <div class="star" style="width:2px;height:2px; top:10%; left:52%;"></div>
+        <div class="star" style="width:2px;height:2px; top:34%; left:30%;"></div>
+        <div class="star" style="width:2px;height:2px; top:18%; left:88%;"></div>
+        <div class="star" style="width:3px;height:3px; top:38%; left:64%;"></div>
+        <div class="star" style="width:2px;height:2px; top:28%; left:6%;"></div>
+      </div>
+      <div class="sky-orb" id="sky-orb"></div>
+      <div class="home-header-inner">
+        <div class="greet-row">
+          <div>
+            <h1 id="greet-h1">Good evening, Shane <span class="wave">👋</span></h1>
+            <div class="greet-sub" id="greet-sub">Ready for tonight's adventure?</div>
+            <div class="weather-line" id="weather-line">64°F · Clear — good night for a rooftop stop</div>
+          </div>
+          <div class="avatar">S</div>
+        </div>
+        <div class="search-bar">
+          <span class="icon-btn" style="background:none; width:auto;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+          </span>
+          <input type="text" placeholder="Search moods, venues, vibes...">
+          <span class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="ai-pick">
+        <span class="ai-tag">✨ AI pick for tonight</span>
+        <h2>Sunset Rooftop Crawl</h2>
+        <p>Rooftop cocktails, a hidden speakeasy, and a late-night skyline view — built for your crew's vibe.</p>
+        <div class="meta">
+          <span>⭐ 4.9</span>
+          <span>·</span>
+          <span>95% match</span>
+          <span>·</span>
+          <span>3 stops</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="crew-row">
+        <div>
+          <div class="crew-label">This Adventure's Crew</div>
+          <div class="crew-sub">3 people going tonight</div>
+        </div>
+        <div class="crew-stack">
+          <div class="ca c1">J</div>
+          <div class="ca c2">A</div>
+          <div class="ca c3 more">+2</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:8px;">
+      <div class="section-title-row">
+        <h3>Trending routes near you</h3>
+        <span class="see-all">See all</span>
+      </div>
+      <div class="trend-grid">
+        <div class="trend-card">
+          <div class="trend-img" style="background:linear-gradient(135deg,var(--primary),var(--tertiary));">🍸</div>
+          <div class="tc-body">
+            <div class="tc-name">The Tasting Menu</div>
+            <div class="tc-meta"><span class="tc-rating">⭐ 4.8</span><span>·</span><span>4 stops</span><span>·</span><span>1.2 mi</span></div>
+          </div>
+        </div>
+        <div class="trend-card">
+          <div class="trend-img" style="background:linear-gradient(135deg,var(--secondary),var(--quaternary));">🎯</div>
+          <div class="tc-body">
+            <div class="tc-name">Recess Energy</div>
+            <div class="tc-meta"><span class="tc-rating">⭐ 4.9</span><span>·</span><span>5 stops</span><span>·</span><span>0.8 mi</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="padding-bottom:20px;">
+      <div class="section-title-row">
+        <h3>Friends Activity</h3>
+        <span class="see-all">See all</span>
+      </div>
+      <div class="activity-list">
+        <div class="activity-row">
+          <div class="act-avatar" style="background:linear-gradient(135deg,var(--primary),var(--secondary));">J&amp;A</div>
+          <div class="act-body"><b>Jordan &amp; Alex</b> completed "After Hours" — 3 stops, 2 badges earned.</div>
+          <div class="act-time">2h</div>
+        </div>
+        <div class="activity-row">
+          <div class="act-avatar" style="background:linear-gradient(135deg,var(--tertiary),var(--tertiary-deep));">S&amp;R</div>
+          <div class="act-body"><b>Sam &amp; Riya</b> just checked in at Kaiseki Nine.</div>
+          <div class="act-time">4h</div>
+        </div>
+        <div class="activity-row">
+          <div class="act-avatar" style="background:linear-gradient(135deg,var(--quaternary),var(--quaternary-light));">D&amp;K</div>
+          <div class="act-body"><b>Devon &amp; Kai</b> unlocked the "Explorer" badge.</div>
+          <div class="act-time">Yesterday</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabbar-wrap">
+    <div class="tabbar">
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+        <span>Explore</span>
+      </div>
+      <div class="tab-item raised">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>
+        <span>Crew</span>
+      </div>
+      <div class="tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="time-control">
+  <div class="time-control-row">
+    <span class="time-control-label">Time of day</span>
+    <span class="time-control-value" id="time-value">9:41 PM</span>
+  </div>
+  <input type="range" class="time-slider" id="time-slider" min="0" max="23.98" step="0.05" value="21.68">
+  <div class="time-presets">
+    <button class="time-preset-btn" data-hour="6">Dawn</button>
+    <button class="time-preset-btn" data-hour="13">Midday</button>
+    <button class="time-preset-btn" data-hour="18.5">Sunset</button>
+    <button class="time-preset-btn" data-hour="23">Night</button>
+    <button class="time-preset-btn play" id="play-btn">▶ Play a full day</button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.tab-item:not(.raised)').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // ---------- DAY/NIGHT TIME-OF-DAY ENGINE ----------
+  // Keyframe stops (hour -> theme). Colors interpolate linearly between the
+  // two nearest stops. h:0 and h:24 are identical so the cycle loops.
+  const warm = { primary:'#e8503f', secondary:'#f2994a', tertiary:'#0ea5a0', tertiaryDeep:'#0b6e68', quaternary:'#5b4b8a', quaternaryLight:'#8a76c9' };
+  const nightAccent = { primary:'#f2994a', secondary:'#e8503f', tertiary:'#10b981', tertiaryDeep:'#0b8a61', quaternary:'#8b5cf6', quaternaryLight:'#b39ef0' };
+
+  const STOPS = [
+    { h:0,    bg:'#100e1c', headerTop:'#181233', text:'#f1eefb', ...nightAccent, skyTop:'#0b0a17', skyBottom:'#241d3d', orb:'#f5f0e0', glow:'rgba(245,240,224,0.35)', stars:1,   greet:'Good night' },
+    { h:5,    bg:'#3a2c40', headerTop:'#6b4a5c', text:'#f5eef0', ...nightAccent, skyTop:'#3a2450', skyBottom:'#f2a15c', orb:'#ffd8a8', glow:'rgba(255,180,120,0.5)',  stars:0.3, greet:'Good morning' },
+    { h:7.5,  bg:'#fff2e4', headerTop:'#ffd9b0', text:'#2a2438', ...warm,        skyTop:'#ffd9b0', skyBottom:'#fff2e0', orb:'#ffcf7a', glow:'rgba(255,200,120,0.45)', stars:0,   greet:'Good morning' },
+    { h:13,   bg:'#fffaf3', headerTop:'#ffe9cf', text:'#2a2438', ...warm,        skyTop:'#ffe9cf', skyBottom:'#fffaf3', orb:'#ffdf8a', glow:'rgba(255,223,140,0.5)',  stars:0,   greet:'Good afternoon' },
+    { h:17.5, bg:'#fbe0c9', headerTop:'#f2a15c', text:'#3a2438', primary:'#e0563f', secondary:'#c94f7c', tertiary:'#7c5ba6', tertiaryDeep:'#5b3f80', quaternary:'#4a3566', quaternaryLight:'#7a5c9c', skyTop:'#8a5a8c', skyBottom:'#f2924f', orb:'#ffb15c', glow:'rgba(255,140,90,0.55)', stars:0.15, greet:'Good evening' },
+    { h:20,   bg:'#241f38', headerTop:'#3a2c50', text:'#f1eefb', ...nightAccent, skyTop:'#161029', skyBottom:'#4a3560', orb:'#e8d9a0', glow:'rgba(230,210,160,0.4)',  stars:0.6, greet:'Good evening' },
+    { h:24,   bg:'#100e1c', headerTop:'#181233', text:'#f1eefb', ...nightAccent, skyTop:'#0b0a17', skyBottom:'#241d3d', orb:'#f5f0e0', glow:'rgba(245,240,224,0.35)', stars:1,   greet:'Good night' },
+  ];
+
+  function hexToRgb(hex){
+    const n = parseInt(hex.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  function rgbToHex(r,g,b){
+    return '#' + [r,g,b].map(v => Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+  }
+  function lerpColor(a, b, t){
+    const [ar,ag,ab] = hexToRgb(a), [br,bg,bb] = hexToRgb(b);
+    return rgbToHex(ar+(br-ar)*t, ag+(bg-ag)*t, ab+(bb-ab)*t);
+  }
+  function lerpRgba(a, b, t){
+    const pa = a.match(/[\d.]+/g).map(Number), pb = b.match(/[\d.]+/g).map(Number);
+    const r = pa.map((v,i) => v + (pb[i]-v)*t);
+    return `rgba(${Math.round(r[0])},${Math.round(r[1])},${Math.round(r[2])},${r[3].toFixed(2)})`;
+  }
+  function lerpNum(a,b,t){ return a + (b-a)*t; }
+
+  // Relative luminance (WCAG-style, simplified sRGB gamma). Used to pick
+  // text ink from the *actual current* background rather than
+  // interpolating text color as its own channel — blending two text
+  // colors in lockstep with a blending background produces a gray-on-gray
+  // dead zone right at the dawn/dusk crossover, which is unreadable.
+  function luminance(hex){
+    const [r,g,b] = hexToRgb(hex).map(v => {
+      const c = v / 255;
+      return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+    });
+    return 0.2126*r + 0.7152*g + 0.0722*b;
+  }
+  const DARK_INK = '#2a2438';
+  const LIGHT_INK = '#f7f3ff';
+
+  function themeAt(hour){
+    for(let i=0; i<STOPS.length-1; i++){
+      const lo = STOPS[i], hi = STOPS[i+1];
+      if(hour >= lo.h && hour <= hi.h){
+        const t = (hour - lo.h) / (hi.h - lo.h);
+        const bg = lerpColor(lo.bg, hi.bg, t);
+        return {
+          bg,
+          headerTop: lerpColor(lo.headerTop, hi.headerTop, t),
+          text: luminance(bg) > 0.4 ? DARK_INK : LIGHT_INK,
+          primary: lerpColor(lo.primary, hi.primary, t),
+          secondary: lerpColor(lo.secondary, hi.secondary, t),
+          tertiary: lerpColor(lo.tertiary, hi.tertiary, t),
+          tertiaryDeep: lerpColor(lo.tertiaryDeep, hi.tertiaryDeep, t),
+          quaternary: lerpColor(lo.quaternary, hi.quaternary, t),
+          quaternaryLight: lerpColor(lo.quaternaryLight, hi.quaternaryLight, t),
+          skyTop: lerpColor(lo.skyTop, hi.skyTop, t),
+          skyBottom: lerpColor(lo.skyBottom, hi.skyBottom, t),
+          orb: lerpColor(lo.orb, hi.orb, t),
+          glow: lerpRgba(lo.glow, hi.glow, t),
+          stars: lerpNum(lo.stars, hi.stars, t),
+          greet: t < 0.5 ? lo.greet : hi.greet,
+        };
+      }
+    }
+    return STOPS[0];
+  }
+
+  const phone = document.getElementById('phone');
+  const skyBand = document.getElementById('sky-band');
+  const skyOrb = document.getElementById('sky-orb');
+  const skyStars = document.getElementById('sky-stars');
+  const statusbar = document.getElementById('statusbar');
+
+  function formatTime(hour){
+    const h = Math.floor(hour);
+    const m = Math.round((hour - h) * 60);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    let h12 = h % 12; if(h12 === 0) h12 = 12;
+    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+
+  function applyTime(hour){
+    hour = ((hour % 24) + 24) % 24;
+    const th = themeAt(hour);
+    // Single source of truth for "is this a light or dark moment" — every
+    // other light/dark decision (card surfaces, the raised nav button,
+    // ink color) derives from this so nothing can fall out of sync with
+    // the actual background at the dawn/dusk crossover.
+    const isLight = luminance(th.bg) > 0.4;
+
+    phone.style.setProperty('--bg', th.bg);
+    phone.style.setProperty('--header-top', th.headerTop);
+    phone.style.setProperty('--text', th.text);
+    phone.style.setProperty('--primary', th.primary);
+    phone.style.setProperty('--secondary', th.secondary);
+    phone.style.setProperty('--tertiary', th.tertiary);
+    phone.style.setProperty('--tertiary-deep', th.tertiaryDeep);
+    phone.style.setProperty('--quaternary', th.quaternary);
+    phone.style.setProperty('--quaternary-light', th.quaternaryLight);
+    phone.style.setProperty('--card-bg', isLight ? '#ffffff' : lerpColor('#ffffff', th.bg, 0.35));
+    phone.style.setProperty('--raised-bg', isLight ? th.text : th.primary);
+    phone.style.setProperty('--raised-fg', isLight ? '#ffffff' : th.bg);
+    phone.style.setProperty('--shadow-rgb', hexToRgb(th.text).join(','));
+
+    skyBand.style.background = `linear-gradient(180deg, ${th.skyTop} 0%, ${th.skyBottom} 100%)`;
+    skyStars.style.opacity = th.stars;
+
+    // Abstract orb: sweeps left-to-right across 24h, arcs highest at
+    // midday and lowest at midnight — no literal sun/moon iconography,
+    // just a glowing circle.
+    const xPct = (hour / 24) * 100;
+    const arc = Math.cos((hour - 13) / 24 * Math.PI * 2); // 1 at h13, -1 at h1
+    const yPct = 55 - 45 * arc;
+    skyOrb.style.left = xPct + '%';
+    skyOrb.style.top = yPct + '%';
+    skyOrb.style.background = th.orb;
+    skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
+
+    document.getElementById('greet-h1').innerHTML = `${th.greet}, Shane <span class="wave">👋</span>`;
+    document.getElementById('time-value').textContent = formatTime(hour);
+    document.getElementById('statusbar-time').textContent = formatTime(hour).replace(/ (AM|PM)/, '');
+    statusbar.style.color = th.text;
+
+    document.getElementById('time-slider').value = hour;
+  }
+
+  const slider = document.getElementById('time-slider');
+  slider.addEventListener('input', () => applyTime(Number(slider.value)));
+
+  document.querySelectorAll('.time-preset-btn[data-hour]').forEach(btn => {
+    btn.addEventListener('click', () => applyTime(Number(btn.dataset.hour)));
+  });
+
+  let playing = false, playRaf = null;
+  document.getElementById('play-btn').addEventListener('click', (e) => {
+    if(playing){
+      playing = false;
+      cancelAnimationFrame(playRaf);
+      e.target.textContent = '▶ Play a full day';
+      return;
+    }
+    playing = true;
+    e.target.textContent = '⏸ Pause';
+    let hour = Number(slider.value);
+    let last = performance.now();
+    const HOURS_PER_SECOND = 2.4; // full 24h loop in ~10s
+    function step(now){
+      const dt = (now - last) / 1000; last = now;
+      hour = (hour + dt * HOURS_PER_SECOND) % 24;
+      applyTime(hour);
+      if(playing) playRaf = requestAnimationFrame(step);
+    }
+    playRaf = requestAnimationFrame(step);
+  });
+
+  // Initialize to the real local time, then let the slider/preset/play
+  // controls take over from there.
+  const now = new Date();
+  applyTime(now.getHours() + now.getMinutes() / 60);
+
+  // ---------- WEATHER (best-effort; static fallback stays if it fails) ----------
+  function describeWeather(code, isDay) {
+    const clear = isDay ? '☀️' : '🌙';
+    if (code === 0) return [clear, 'Clear'];
+    if ([1, 2].includes(code)) return [isDay ? '🌤️' : '🌙', 'Mostly clear'];
+    if (code === 3) return ['☁️', 'Cloudy'];
+    if ([45, 48].includes(code)) return ['🌫️', 'Foggy'];
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return ['🌧️', 'Rainy'];
+    if ([71, 73, 75, 85, 86].includes(code)) return ['❄️', 'Snowy'];
+    if ([95, 96, 99].includes(code)) return ['⛈️', 'Stormy'];
+    return [clear, 'Clear'];
+  }
+  function suggestion(code, tempF) {
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(code)) return 'indoor stops only tonight';
+    if (tempF !== null && tempF < 45) return 'skip the rooftop, stay cozy';
+    return 'good night for a rooftop stop';
+  }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit`)
+          .then(r => r.json())
+          .then(data => {
+            const cur = data.current;
+            if (!cur) return;
+            const [icon, label] = describeWeather(cur.weather_code, cur.is_day);
+            const tempF = Math.round(cur.temperature_2m);
+            document.getElementById('weather-line').textContent =
+              `${icon} ${tempF}°F · ${label} — ${suggestion(cur.weather_code, tempF)}`;
+          })
+          .catch(() => {});
+      },
+      () => {},
+      { timeout: 4000 }
+    );
+  }
+</script>
+
+</body>
+</html>

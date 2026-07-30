@@ -171,13 +171,15 @@
   .manage-sub-link{ font-size:0.85rem; opacity:0.75; cursor:pointer; font-weight:500; text-align:center; }
   .manage-sub-link:hover{ opacity:1; text-decoration:underline; }
 
-  /* ---------- PASS SHEET (expand-from-card animation) ---------- */
-  .pass-sheet-backdrop{
+  /* ---------- EXPAND SHEET SHELL (shared FLIP-animation shell used by
+     the MUSO Pass sheet, the coin-pack sheet, and the badge celebration —
+     each supplies its own inner content classes) ---------- */
+  .sheet-backdrop{
     position:fixed; inset:0; background:rgba(42,36,56,0.32);
     opacity:0; transition:opacity .3s ease; z-index:200; pointer-events:none;
   }
-  .pass-sheet-backdrop.show{ opacity:1; pointer-events:auto; }
-  .pass-sheet{
+  .sheet-backdrop.show{ opacity:1; pointer-events:auto; }
+  .expand-sheet{
     position:fixed; overflow:hidden; background:var(--cream);
     box-shadow:0 24px 60px rgba(42,36,56,0.28);
     transition:top .42s cubic-bezier(.22,.85,.32,1), left .42s cubic-bezier(.22,.85,.32,1),
@@ -185,13 +187,16 @@
       border-radius .42s cubic-bezier(.22,.85,.32,1);
     z-index:201; display:flex; flex-direction:column;
   }
-  .pass-sheet[hidden]{ display:none; }
-  .pass-sheet-scroll{ overflow-y:auto; flex:1; padding:26px 26px 100px; }
+  .expand-sheet[hidden]{ display:none; }
+  .expand-sheet-scroll{ overflow-y:auto; flex:1; padding:26px 26px 100px; }
+
+  /* ---------- shared sheet chrome (topbar/back/reveal stagger/cta-wrap —
+     used by both the Pass sheet and the coin-pack sheet) ---------- */
   .pass-sheet-topbar{
     display:flex; align-items:center; justify-content:space-between; padding:14px 18px;
     opacity:0; transform:translateY(-6px); transition:opacity .3s ease, transform .3s ease;
   }
-  .pass-sheet.content-in .pass-sheet-topbar{ opacity:1; transform:translateY(0); }
+  .expand-sheet.content-in .pass-sheet-topbar{ opacity:1; transform:translateY(0); }
   .pass-sheet-back{
     width:36px; height:36px; border-radius:50%; background:#fff; border:none;
     box-shadow:0 3px 10px rgba(42,36,56,0.12); cursor:pointer; font-size:1rem;
@@ -204,17 +209,17 @@
   }
   .pass-sheet-title{ text-align:center; font-size:1.6rem; margin-bottom:8px; }
   .pass-sheet-title .pre{ opacity:0; transition:opacity .3s ease .12s; }
-  .pass-sheet.content-in .pass-sheet-title .pre{ opacity:1; }
+  .expand-sheet.content-in .pass-sheet-title .pre{ opacity:1; }
   .pass-sheet-sub{ text-align:center; opacity:0.72; font-size:0.95rem; max-width:420px; margin:0 auto 22px; line-height:1.5; }
 
   .reveal-item{ opacity:0; transform:translateY(14px); transition:opacity .4s ease, transform .4s ease; }
-  .pass-sheet.content-in .reveal-item{ opacity:1; transform:translateY(0); }
-  .pass-sheet.content-in .reveal-item.r1{ transition-delay:.05s; }
-  .pass-sheet.content-in .reveal-item.r2{ transition-delay:.11s; }
-  .pass-sheet.content-in .reveal-item.r3{ transition-delay:.17s; }
-  .pass-sheet.content-in .reveal-item.r4{ transition-delay:.23s; }
-  .pass-sheet.content-in .reveal-item.r5{ transition-delay:.29s; }
-  .pass-sheet.content-in .reveal-item.r6{ transition-delay:.35s; }
+  .expand-sheet.content-in .reveal-item{ opacity:1; transform:translateY(0); }
+  .expand-sheet.content-in .reveal-item.r1{ transition-delay:.05s; }
+  .expand-sheet.content-in .reveal-item.r2{ transition-delay:.11s; }
+  .expand-sheet.content-in .reveal-item.r3{ transition-delay:.17s; }
+  .expand-sheet.content-in .reveal-item.r4{ transition-delay:.23s; }
+  .expand-sheet.content-in .reveal-item.r5{ transition-delay:.29s; }
+  .expand-sheet.content-in .reveal-item.r6{ transition-delay:.35s; }
 
   .pass-sheet-perks{
     list-style:none; display:flex; flex-direction:column; gap:12px;
@@ -265,7 +270,7 @@
   .pass-sheet-fine{ text-align:center; font-size:0.74rem; opacity:0.55; margin-top:8px; }
 
   @media (prefers-reduced-motion: reduce){
-    .pass-sheet, .pass-sheet-backdrop, .reveal-item, .pass-sheet-topbar, .pass-sheet-title .pre, .pass-sheet-cta-wrap{
+    .expand-sheet, .sheet-backdrop, .reveal-item, .pass-sheet-topbar, .pass-sheet-title .pre, .pass-sheet-cta-wrap, .coin-sheet-topbar, .coin-sheet-cta-wrap{
       transition-duration:.01ms !important;
     }
   }
@@ -502,9 +507,9 @@
   <p>Prices shown in USD. Adventure Coins and MUSO Pass are used only within MUSO Adventures and have no cash value outside the app.</p>
 </footer>
 
-<div class="pass-sheet-backdrop" id="pass-sheet-backdrop" onclick="closePassSheet()"></div>
-<div class="pass-sheet" id="pass-sheet" hidden>
-  <div class="pass-sheet-scroll">
+<div class="sheet-backdrop" id="pass-sheet-backdrop" onclick="closePassSheet()"></div>
+<div class="pass-sheet expand-sheet" id="pass-sheet" hidden>
+  <div class="expand-sheet-scroll">
     <div class="pass-sheet-topbar">
       <button type="button" class="pass-sheet-back" onclick="closePassSheet()" aria-label="Close">&larr;</button>
     </div>
