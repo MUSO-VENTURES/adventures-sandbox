@@ -814,35 +814,45 @@
     phoneGlow.style.opacity = th.stars;
     pageStars.style.opacity = th.stars * 0.8;
 
-    // Abstract orb: a single day arc only — rises off-screen at the
-    // bottom-left exactly at sunrise, climbs through the top at midday,
-    // and exits off-screen at the bottom-right exactly at sunset. It's
-    // simply not shown at night (no separate moon arc — that was the
-    // source of an unnatural teleport, since a mirrored night arc reset
-    // to bottom-left immediately after the day arc had just exited
-    // bottom-right). The loop just starts fresh at the following sunrise.
+    // Abstract orb: the sun rises off-screen bottom-left at sunrise, arcs
+    // through the top at midday, and exits off-screen bottom-right at
+    // sunset — then the moon runs the same bottom-left -> top ->
+    // bottom-right arc across the night, appearing at sunset and
+    // disappearing when the sun rises. th.orb/th.glow already interpolate
+    // to a cool white-violet during night stops, so the same circle reads
+    // as sun by day and moon by night without separate art.
+    //
+    // The two arcs sit at different x positions at the handoff instant
+    // (sun exits at 115%, moon must enter at -15%), so whenever the
+    // sun/moon boundary is crossed, the orb is snapped to its new
+    // position while fully transparent (transition disabled for that one
+    // frame) and then faded back in — a clean appear/disappear instead of
+    // a visible slide across the sky.
     const SUNRISE_H = 5.5, SUNSET_H = 19.5;
     const isDaytime = hour >= SUNRISE_H && hour <= SUNSET_H;
     const ORB_MARGIN = 15;
-    const t = isDaytime ? (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H) : 0;
+    let t;
+    if (isDaytime) {
+      t = (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H);
+    } else {
+      const hNorm = hour < SUNRISE_H ? hour + 24 : hour;
+      t = (hNorm - SUNSET_H) / (SUNRISE_H + 24 - SUNSET_H);
+    }
     const xPct = -ORB_MARGIN + t * (100 + ORB_MARGIN * 2);
     const yPct = 88 - 78 * Math.sin(t * Math.PI);
-    if (isDaytime) {
-      if (!wasDaytime) {
-        // Coming back from a full night parked off-screen — snap straight
-        // into the sunrise start position instead of sliding across from
-        // wherever it was last rendered.
-        skyOrb.style.transition = 'none';
-        skyOrb.style.left = xPct + '%';
-        skyOrb.style.top = yPct + '%';
-        void skyOrb.offsetWidth;
-        skyOrb.style.transition = '';
-      }
+
+    if (wasDaytime !== null && isDaytime !== wasDaytime) {
+      skyOrb.style.transition = 'none';
+      skyOrb.style.opacity = '0';
+      skyOrb.style.left = xPct + '%';
+      skyOrb.style.top = yPct + '%';
+      void skyOrb.offsetWidth;
+      skyOrb.style.transition = '';
+      requestAnimationFrame(() => { skyOrb.style.opacity = '1'; });
+    } else {
       skyOrb.style.left = xPct + '%';
       skyOrb.style.top = yPct + '%';
       skyOrb.style.opacity = '1';
-    } else {
-      skyOrb.style.opacity = '0';
     }
     wasDaytime = isDaytime;
     skyOrb.style.background = th.orb;
