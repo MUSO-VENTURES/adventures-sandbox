@@ -764,6 +764,7 @@
   const phone = document.getElementById('phone');
   const skyBand = document.getElementById('sky-band');
   const skyOrb = document.getElementById('sky-orb');
+  let wasDaytime = null;
   const skyStars = document.getElementById('sky-stars');
   const phoneGlow = document.getElementById('phone-glow');
   const pageStars = document.getElementById('page-stars');
@@ -813,28 +814,37 @@
     phoneGlow.style.opacity = th.stars;
     pageStars.style.opacity = th.stars * 0.8;
 
-    // Abstract orb: the sun rises at the bottom-left of the band, arcs up
-    // through the top at midday, and sets at the bottom-right — then the
-    // moon mirrors that same bottom-left -> top -> bottom-right arc across
-    // the night span, so the position resets to bottom-left exactly as
-    // the loop restarts at the following sunrise. No literal sun/moon
-    // iconography, just a glowing circle on an elliptical path.
+    // Abstract orb: a single day arc only — rises off-screen at the
+    // bottom-left exactly at sunrise, climbs through the top at midday,
+    // and exits off-screen at the bottom-right exactly at sunset. It's
+    // simply not shown at night (no separate moon arc — that was the
+    // source of an unnatural teleport, since a mirrored night arc reset
+    // to bottom-left immediately after the day arc had just exited
+    // bottom-right). The loop just starts fresh at the following sunrise.
     const SUNRISE_H = 5.5, SUNSET_H = 19.5;
-    let t;
-    if (hour >= SUNRISE_H && hour <= SUNSET_H) {
-      t = (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H);
-    } else {
-      const hNorm = hour < SUNRISE_H ? hour + 24 : hour;
-      t = (hNorm - SUNSET_H) / (SUNRISE_H + 24 - SUNSET_H);
-    }
-    // Overshoots past 0%/100% at each end so the orb is genuinely off the
-    // edge of the (overflow:hidden) sky band at rise/set — not just faded
-    // out while still sitting in-bounds.
+    const isDaytime = hour >= SUNRISE_H && hour <= SUNSET_H;
     const ORB_MARGIN = 15;
+    const t = isDaytime ? (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H) : 0;
     const xPct = -ORB_MARGIN + t * (100 + ORB_MARGIN * 2);
     const yPct = 88 - 78 * Math.sin(t * Math.PI);
-    skyOrb.style.left = xPct + '%';
-    skyOrb.style.top = yPct + '%';
+    if (isDaytime) {
+      if (!wasDaytime) {
+        // Coming back from a full night parked off-screen — snap straight
+        // into the sunrise start position instead of sliding across from
+        // wherever it was last rendered.
+        skyOrb.style.transition = 'none';
+        skyOrb.style.left = xPct + '%';
+        skyOrb.style.top = yPct + '%';
+        void skyOrb.offsetWidth;
+        skyOrb.style.transition = '';
+      }
+      skyOrb.style.left = xPct + '%';
+      skyOrb.style.top = yPct + '%';
+      skyOrb.style.opacity = '1';
+    } else {
+      skyOrb.style.opacity = '0';
+    }
+    wasDaytime = isDaytime;
     skyOrb.style.background = th.orb;
     skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
 
