@@ -98,8 +98,6 @@
 
   .greet-row{ display:flex; align-items:center; gap:12px; }
   .greet-row h1{ font-size:1.3rem; color:var(--text); transition:color .35s ease; }
-  .greet-row .wave{ display:inline-block; animation:wave 2.2s infinite; transform-origin:70% 70%; }
-  @keyframes wave{ 0%,100%{transform:rotate(0);} 15%{transform:rotate(14deg);} 30%{transform:rotate(-8deg);} 45%{transform:rotate(14deg);} 60%{transform:rotate(0);} }
   .greet-sub{ opacity:0.68; font-size:0.9rem; margin-top:2px; color:var(--text); transition:color .35s ease; }
   .weather-line{
     display:flex; align-items:center; gap:6px; margin-top:10px; font-size:0.8rem;
@@ -382,7 +380,7 @@
         <div class="greet-row">
           <div class="avatar">S</div>
           <div>
-            <h1 id="greet-h1">Good evening, Shane <span class="wave">👋</span></h1>
+            <h1 id="greet-h1">Good evening, Shane</h1>
             <div class="greet-sub" id="greet-sub">Ready for tonight's adventure?</div>
           </div>
         </div>
@@ -829,22 +827,18 @@
       const hNorm = hour < SUNRISE_H ? hour + 24 : hour;
       t = (hNorm - SUNSET_H) / (SUNRISE_H + 24 - SUNSET_H);
     }
-    const xPct = t * 100;
+    // Overshoots past 0%/100% at each end so the orb is genuinely off the
+    // edge of the (overflow:hidden) sky band at rise/set — not just faded
+    // out while still sitting in-bounds.
+    const ORB_MARGIN = 15;
+    const xPct = -ORB_MARGIN + t * (100 + ORB_MARGIN * 2);
     const yPct = 88 - 78 * Math.sin(t * Math.PI);
     skyOrb.style.left = xPct + '%';
     skyOrb.style.top = yPct + '%';
     skyOrb.style.background = th.orb;
     skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
-    // Invisible exactly at the bottom-left/bottom-right edges (off stage
-    // at rise/set) rather than popping in already clipped by the band —
-    // fades in/out over a small window at each end of the arc.
-    const FADE_ZONE = 0.06;
-    let orbOpacity = 1;
-    if (t < FADE_ZONE) orbOpacity = t / FADE_ZONE;
-    else if (t > 1 - FADE_ZONE) orbOpacity = (1 - t) / FADE_ZONE;
-    skyOrb.style.opacity = orbOpacity;
 
-    document.getElementById('greet-h1').innerHTML = `${th.greet}, Shane <span class="wave">👋</span>`;
+    document.getElementById('greet-h1').innerHTML = th.greet + ', Shane';
     // "Tonight" framing starts at dusk (h20) — just before it's officially
     // night (h24/h0) — and switches back to "today" when the sun comes up
     // at dawn (h5), matching the orb's own rise/set stops.
