@@ -687,6 +687,13 @@
   const STOPS = [
     { h:0,    bg:'#0a0912', headerTop:'#151029', text:'#f1eefb', ...nightAccent, skyTop:'#07060d', skyBottom:'#221a42', orb:'#e8e2ff', glow:'rgba(139,124,246,0.4)',  stars:1,   greet:'Good night' },
     { h:5,    bg:'#2e2246', headerTop:'#5a3f6b', text:'#f5eef0', primary:'#c76fa8', secondary:'#e0824f', tertiary:'#5b93d9', tertiaryDeep:'#3f6bb0', quaternary:'#7c6cf0', quaternaryLight:'#a897f5', skyTop:'#332356', skyBottom:'#e88a5c', orb:'#ffcf9c', glow:'rgba(255,180,140,0.5)', stars:0.3, greet:'Good morning' },
+    // Sunrise midpoint — a straight RGB blend between the deep-violet
+    // dawn stop and the bright-cream day stop passes through a muddy,
+    // "uneasy" gray-brown around 6:15-7:30am (same failure mode as the
+    // text-contrast bug: linear interpolation between very different
+    // hues degrades in the middle). This stop routes the transition
+    // through an actual warm sunrise-peach instead.
+    { h:6.25, bg:'#ffd9b8', headerTop:'#ffcba3', text:'#2a2438', primary:'#e06a5f', secondary:'#f0924a', tertiary:'#4a9dc9', tertiaryDeep:'#337aa3', quaternary:'#8a6ecf', quaternaryLight:'#b3a0e8', skyTop:'#f5b98a', skyBottom:'#fff0dc', orb:'#ffdca0', glow:'rgba(255,200,140,0.5)', stars:0.05, greet:'Good morning' },
     { h:7.5,  bg:'#fff2e4', headerTop:'#c9e6f7', text:'#2a2438', ...warm,        skyTop:'#bfe0f5', skyBottom:'#fff2e0', orb:'#ffcf7a', glow:'rgba(255,200,120,0.45)', stars:0,   greet:'Good morning' },
     { h:13,   bg:'#fffaf3', headerTop:'#a9d8f0', text:'#2a2438', ...warm,        skyTop:'#a9d8f0', skyBottom:'#fffaf3', orb:'#ffdf8a', glow:'rgba(255,223,140,0.5)',  stars:0,   greet:'Good afternoon' },
     { h:17.5, bg:'#fbe0c9', headerTop:'#f2a15c', text:'#3a2438', primary:'#e0563f', secondary:'#c94f7c', tertiary:'#7c5ba6', tertiaryDeep:'#5b3f80', quaternary:'#4a3566', quaternaryLight:'#7a5c9c', skyTop:'#8a5a8c', skyBottom:'#f2924f', orb:'#ffb15c', glow:'rgba(255,140,90,0.55)', stars:0.15, greet:'Good evening' },
@@ -807,12 +814,22 @@
     phoneGlow.style.opacity = th.stars;
     pageStars.style.opacity = th.stars * 0.8;
 
-    // Abstract orb: sweeps left-to-right across 24h, arcs highest at
-    // midday and lowest at midnight — no literal sun/moon iconography,
-    // just a glowing circle.
-    const xPct = (hour / 24) * 100;
-    const arc = Math.cos((hour - 13) / 24 * Math.PI * 2); // 1 at h13, -1 at h1
-    const yPct = 55 - 45 * arc;
+    // Abstract orb: the sun rises at the bottom-left of the band, arcs up
+    // through the top at midday, and sets at the bottom-right — then the
+    // moon mirrors that same bottom-left -> top -> bottom-right arc across
+    // the night span, so the position resets to bottom-left exactly as
+    // the loop restarts at the following sunrise. No literal sun/moon
+    // iconography, just a glowing circle on an elliptical path.
+    const SUNRISE_H = 5.5, SUNSET_H = 19.5;
+    let t;
+    if (hour >= SUNRISE_H && hour <= SUNSET_H) {
+      t = (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H);
+    } else {
+      const hNorm = hour < SUNRISE_H ? hour + 24 : hour;
+      t = (hNorm - SUNSET_H) / (SUNRISE_H + 24 - SUNSET_H);
+    }
+    const xPct = t * 100;
+    const yPct = 88 - 78 * Math.sin(t * Math.PI);
     skyOrb.style.left = xPct + '%';
     skyOrb.style.top = yPct + '%';
     skyOrb.style.background = th.orb;
