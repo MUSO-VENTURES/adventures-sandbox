@@ -171,6 +171,105 @@
   .manage-sub-link{ font-size:0.85rem; opacity:0.75; cursor:pointer; font-weight:500; text-align:center; }
   .manage-sub-link:hover{ opacity:1; text-decoration:underline; }
 
+  /* ---------- PASS SHEET (expand-from-card animation) ---------- */
+  .pass-sheet-backdrop{
+    position:fixed; inset:0; background:rgba(42,36,56,0.32);
+    opacity:0; transition:opacity .3s ease; z-index:200; pointer-events:none;
+  }
+  .pass-sheet-backdrop.show{ opacity:1; pointer-events:auto; }
+  .pass-sheet{
+    position:fixed; overflow:hidden; background:var(--cream);
+    box-shadow:0 24px 60px rgba(42,36,56,0.28);
+    transition:top .42s cubic-bezier(.22,.85,.32,1), left .42s cubic-bezier(.22,.85,.32,1),
+      width .42s cubic-bezier(.22,.85,.32,1), height .42s cubic-bezier(.22,.85,.32,1),
+      border-radius .42s cubic-bezier(.22,.85,.32,1);
+    z-index:201; display:flex; flex-direction:column;
+  }
+  .pass-sheet[hidden]{ display:none; }
+  .pass-sheet-scroll{ overflow-y:auto; flex:1; padding:26px 26px 100px; }
+  .pass-sheet-topbar{
+    display:flex; align-items:center; justify-content:space-between; padding:14px 18px;
+    opacity:0; transform:translateY(-6px); transition:opacity .3s ease, transform .3s ease;
+  }
+  .pass-sheet.content-in .pass-sheet-topbar{ opacity:1; transform:translateY(0); }
+  .pass-sheet-back{
+    width:36px; height:36px; border-radius:50%; background:#fff; border:none;
+    box-shadow:0 3px 10px rgba(42,36,56,0.12); cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pass-sheet-icon{
+    width:64px; height:64px; border-radius:20px; margin:6px auto 14px;
+    background:linear-gradient(135deg, var(--coral), var(--plum));
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem;
+  }
+  .pass-sheet-title{ text-align:center; font-size:1.6rem; margin-bottom:8px; }
+  .pass-sheet-title .pre{ opacity:0; transition:opacity .3s ease .12s; }
+  .pass-sheet.content-in .pass-sheet-title .pre{ opacity:1; }
+  .pass-sheet-sub{ text-align:center; opacity:0.72; font-size:0.95rem; max-width:420px; margin:0 auto 22px; line-height:1.5; }
+
+  .reveal-item{ opacity:0; transform:translateY(14px); transition:opacity .4s ease, transform .4s ease; }
+  .pass-sheet.content-in .reveal-item{ opacity:1; transform:translateY(0); }
+  .pass-sheet.content-in .reveal-item.r1{ transition-delay:.05s; }
+  .pass-sheet.content-in .reveal-item.r2{ transition-delay:.11s; }
+  .pass-sheet.content-in .reveal-item.r3{ transition-delay:.17s; }
+  .pass-sheet.content-in .reveal-item.r4{ transition-delay:.23s; }
+  .pass-sheet.content-in .reveal-item.r5{ transition-delay:.29s; }
+  .pass-sheet.content-in .reveal-item.r6{ transition-delay:.35s; }
+
+  .pass-sheet-perks{
+    list-style:none; display:flex; flex-direction:column; gap:12px;
+    background:#fff; border-radius:18px; padding:20px; margin-bottom:22px;
+    box-shadow:0 6px 20px rgba(42,36,56,0.06);
+  }
+  .pass-sheet-perks li{ display:flex; align-items:center; justify-content:space-between; font-size:0.94rem; gap:10px; }
+  .pass-sheet-perks li .label{ display:flex; align-items:center; gap:8px; }
+  .pass-sheet-perks li .check-dot{
+    width:22px; height:22px; border-radius:50%; background:var(--deep-teal); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0;
+  }
+  .pass-sheet-perks li .count-dot{
+    min-width:28px; height:22px; padding:0 8px; border-radius:999px; background:var(--tangerine); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:700; flex-shrink:0;
+    font-family:'Fredoka',sans-serif;
+  }
+
+  .pass-sheet-tier{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:#fff; border:2px solid rgba(42,36,56,0.1); border-radius:16px;
+    padding:16px 18px; margin-bottom:12px; cursor:pointer; transition:border-color .2s, box-shadow .2s;
+  }
+  .pass-sheet-tier.selected{ border-color:var(--coral); box-shadow:0 4px 16px rgba(232,80,63,0.18); }
+  .pass-sheet-tier .pt-name{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:1rem; display:flex; align-items:center; gap:8px; }
+  .pass-sheet-tier .pt-price{ font-size:0.85rem; opacity:0.65; margin-top:2px; }
+  .pass-sheet-tier .pt-radio{
+    width:22px; height:22px; border-radius:50%; border:2px solid rgba(42,36,56,0.25);
+    flex-shrink:0; position:relative; transition:border-color .2s;
+  }
+  .pass-sheet-tier.selected .pt-radio{ border-color:var(--coral); }
+  .pass-sheet-tier.selected .pt-radio::after{
+    content:""; position:absolute; inset:3px; border-radius:50%; background:var(--coral);
+  }
+
+  .pass-sheet-cta-wrap{
+    position:absolute; left:0; right:0; bottom:0; padding:16px 26px 22px;
+    background:linear-gradient(180deg, rgba(255,247,237,0) 0%, var(--cream) 30%);
+    opacity:0; transform:translateY(8px); transition:opacity .35s ease .4s, transform .35s ease .4s;
+  }
+  .pass-sheet.content-in .pass-sheet-cta-wrap{ opacity:1; transform:translateY(0); }
+  .pass-sheet-cta{
+    width:100%; padding:14px 0; border-radius:999px; border:none;
+    background:linear-gradient(135deg, var(--coral), var(--plum)); color:#fff;
+    font-weight:700; font-family:'Fredoka',sans-serif; font-size:1rem; cursor:pointer;
+  }
+  .pass-sheet-cta:disabled{ opacity:0.65; cursor:default; }
+  .pass-sheet-fine{ text-align:center; font-size:0.74rem; opacity:0.55; margin-top:8px; }
+
+  @media (prefers-reduced-motion: reduce){
+    .pass-sheet, .pass-sheet-backdrop, .reveal-item, .pass-sheet-topbar, .pass-sheet-title .pre, .pass-sheet-cta-wrap{
+      transition-duration:.01ms !important;
+    }
+  }
+
   /* ---------- FAQ ---------- */
   .faq-list{ display:flex; flex-direction:column; gap:14px; margin-top:32px; }
   .faq-item{
@@ -354,7 +453,7 @@
         <li><span class="check">✓</span> 1 visual theme unlocked for you</li>
       </ul>
       <div class="best-for">Best for: casual regulars who play a few times a month.</div>
-      <button type="button" class="subscribe-btn" data-tier="pass" onclick="subscribeToPass(this)">Subscribe</button>
+      <button type="button" class="subscribe-btn" data-tier="pass" onclick="openPassSheet('pass', this)">Subscribe</button>
     </div>
     <div class="pass-card plus">
       <div class="pass-name">🎟️ MUSO Pass+</div>
@@ -368,7 +467,7 @@
         <li><span class="check">✓</span> 1 free real-world reward redemption every month</li>
       </ul>
       <div class="best-for">Best for: frequent explorers who want everything unlocked at once.</div>
-      <button type="button" class="subscribe-btn" data-tier="pass_plus" onclick="subscribeToPass(this)">Subscribe</button>
+      <button type="button" class="subscribe-btn" data-tier="pass_plus" onclick="openPassSheet('pass_plus', this)">Subscribe</button>
     </div>
   </div>
   <div id="manage-sub-wrap" style="text-align:center; margin-top:18px;"></div>
@@ -402,6 +501,27 @@
 <footer>
   <p>Prices shown in USD. Adventure Coins and MUSO Pass are used only within MUSO Adventures and have no cash value outside the app.</p>
 </footer>
+
+<div class="pass-sheet-backdrop" id="pass-sheet-backdrop" onclick="closePassSheet()"></div>
+<div class="pass-sheet" id="pass-sheet" hidden>
+  <div class="pass-sheet-scroll">
+    <div class="pass-sheet-topbar">
+      <button type="button" class="pass-sheet-back" onclick="closePassSheet()" aria-label="Close">&larr;</button>
+    </div>
+    <div class="pass-sheet-icon reveal-item r1">🎟️</div>
+    <h2 class="pass-sheet-title reveal-item r1"><span class="pre">Unlock </span>MUSO Pass</h2>
+    <p class="pass-sheet-sub reveal-item r1">More adventures, more unlocks — for less than one round of drinks a month.</p>
+
+    <ul class="pass-sheet-perks reveal-item r2" id="pass-sheet-perks"></ul>
+
+    <div class="reveal-item r3" id="pass-sheet-tiers"></div>
+  </div>
+
+  <div class="pass-sheet-cta-wrap">
+    <button type="button" class="pass-sheet-cta" id="pass-sheet-cta" data-tier="pass" onclick="subscribeToPass(this)">Subscribe — $7.99/month</button>
+    <p class="pass-sheet-fine">Cancel anytime from your account. Renews monthly until canceled.</p>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
@@ -552,6 +672,139 @@
       btn.disabled = false;
       btn.textContent = originalText;
     }
+  };
+
+  // ---------- PASS SHEET (expand-from-card animation) ----------
+  const PASS_TIERS = {
+    pass: {
+      name: '🎟️ MUSO Pass', price: 7.99,
+      perks: [
+        { label: '50-mile search range, all month', kind: 'check' },
+        { label: 'Reroute tokens', kind: 'count', value: 3 },
+        { label: 'Exclusive subscriber badge', kind: 'check' },
+        { label: 'Coins every month', kind: 'count', value: 750, suffix: '🪙' },
+      ],
+    },
+    pass_plus: {
+      name: '🎟️ MUSO Pass+', price: 14.99,
+      perks: [
+        { label: 'Everything in MUSO Pass', kind: 'check' },
+        { label: 'All 5 stops auto-unlocked', kind: 'check' },
+        { label: 'Real venue search, all month', kind: 'check' },
+        { label: 'Coins every month', kind: 'count', value: 1800, suffix: '🪙' },
+      ],
+    },
+  };
+
+  function animateCount(el, to, suffix) {
+    const duration = 650;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * to).toLocaleString() + (suffix ? ' ' + suffix : '');
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderPassSheetPerks(key, animated) {
+    const tier = PASS_TIERS[key];
+    const perksEl = document.getElementById('pass-sheet-perks');
+    perksEl.innerHTML = tier.perks.map((p, i) => `
+      <li>
+        <span class="label">
+          ${p.kind === 'check' ? '<span class="check-dot">&check;</span>' : ''}
+          ${p.label}
+        </span>
+        ${p.kind === 'count' ? `<span class="count-dot" data-final="${p.value}" data-suffix="${p.suffix || ''}">${animated ? 0 : p.value}</span>` : ''}
+      </li>
+    `).join('');
+
+    if (animated) {
+      // Kick off the count-up perks after the sheet's reveal transition
+      // starts — matches the reference animation's ticking XP-style
+      // counters rather than having numbers just appear.
+      setTimeout(() => {
+        perksEl.querySelectorAll('.count-dot').forEach(dot => {
+          animateCount(dot, Number(dot.dataset.final), dot.dataset.suffix);
+        });
+      }, 150);
+    }
+
+    const cta = document.getElementById('pass-sheet-cta');
+    cta.dataset.tier = key;
+    cta.textContent = `Subscribe — $${tier.price.toFixed(2)}/month`;
+  }
+
+  function renderPassSheetTier(key) {
+    const tiersEl = document.getElementById('pass-sheet-tiers');
+    tiersEl.innerHTML = Object.keys(PASS_TIERS).map(k => {
+      const t = PASS_TIERS[k];
+      return `
+        <div class="pass-sheet-tier ${k === key ? 'selected' : ''}" data-tier="${k}" onclick="selectPassTier('${k}')">
+          <div>
+            <div class="pt-name">${t.name}</div>
+            <div class="pt-price">$${t.price.toFixed(2)} / month</div>
+          </div>
+          <div class="pt-radio"></div>
+        </div>
+      `;
+    }).join('');
+
+    renderPassSheetPerks(key, true);
+  }
+
+  window.selectPassTier = function (key) {
+    document.querySelectorAll('.pass-sheet-tier').forEach(el => {
+      el.classList.toggle('selected', el.dataset.tier === key);
+    });
+    // Perks differ meaningfully between Pass and Pass+ (not just price), so
+    // switching tiers has to re-render the whole perks list, not just the
+    // price — a plain re-render (not the count-up animation) since this is
+    // an instant selection swap, not the sheet's initial reveal.
+    renderPassSheetPerks(key, false);
+  };
+
+  window.openPassSheet = function (tier, originBtn) {
+    const card = originBtn.closest('.pass-card');
+    const rect = card.getBoundingClientRect();
+    const sheet = document.getElementById('pass-sheet');
+    const backdrop = document.getElementById('pass-sheet-backdrop');
+
+    renderPassSheetTier(tier);
+
+    sheet.hidden = false;
+    sheet.style.transition = 'none';
+    sheet.style.top = rect.top + 'px';
+    sheet.style.left = rect.left + 'px';
+    sheet.style.width = rect.width + 'px';
+    sheet.style.height = rect.height + 'px';
+    sheet.style.borderRadius = '22px';
+    sheet.classList.remove('content-in');
+    void sheet.offsetWidth; // force reflow so the collapsed state actually paints first
+    sheet.style.transition = '';
+    backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    requestAnimationFrame(() => {
+      sheet.style.top = '0';
+      sheet.style.left = '0';
+      sheet.style.width = '100vw';
+      sheet.style.height = '100vh';
+      sheet.style.borderRadius = '0px';
+    });
+
+    setTimeout(() => sheet.classList.add('content-in'), 380);
+  };
+
+  window.closePassSheet = function () {
+    const sheet = document.getElementById('pass-sheet');
+    const backdrop = document.getElementById('pass-sheet-backdrop');
+    sheet.classList.remove('content-in');
+    backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+    setTimeout(() => { sheet.hidden = true; }, 420);
   };
 
   window.subscribeToPass = async function (btn) {
