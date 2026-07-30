@@ -89,7 +89,8 @@
   .star{ position:absolute; border-radius:50%; background:#fff; }
   .sky-orb{
     position:absolute; width:34px; height:34px; border-radius:50%;
-    transform:translate(-50%,-50%); transition:background .35s ease, box-shadow .35s ease, left .5s ease, top .5s ease;
+    transform:translate(-50%,-50%);
+    transition:background .35s ease, box-shadow .35s ease, left .5s ease, top .5s ease, opacity .4s ease;
   }
   .home-header-inner{
     position:absolute; inset:0; padding:14px 22px 0; z-index:2;
@@ -834,6 +835,14 @@
     skyOrb.style.top = yPct + '%';
     skyOrb.style.background = th.orb;
     skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
+    // Invisible exactly at the bottom-left/bottom-right edges (off stage
+    // at rise/set) rather than popping in already clipped by the band —
+    // fades in/out over a small window at each end of the arc.
+    const FADE_ZONE = 0.06;
+    let orbOpacity = 1;
+    if (t < FADE_ZONE) orbOpacity = t / FADE_ZONE;
+    else if (t > 1 - FADE_ZONE) orbOpacity = (1 - t) / FADE_ZONE;
+    skyOrb.style.opacity = orbOpacity;
 
     document.getElementById('greet-h1').innerHTML = `${th.greet}, Shane <span class="wave">👋</span>`;
     // "Tonight" framing starts at dusk (h20) — just before it's officially
