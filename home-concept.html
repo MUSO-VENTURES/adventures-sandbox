@@ -83,7 +83,7 @@
      on an elliptical arc + a few star dots, all driven by the time value.
      This whole block sits behind the greeting content. */
   .sky-band{
-    position:relative; height:190px; overflow:hidden; transition:background .35s ease;
+    position:relative; z-index:1; height:190px; overflow:hidden; transition:background .35s ease;
   }
   .sky-stars{ position:absolute; inset:0; transition:opacity .35s ease; }
   .star{ position:absolute; border-radius:50%; background:#fff; }
@@ -130,7 +130,27 @@
   }
 
   /* ---------- AI PICK CARD ---------- */
-  .section{ padding:22px 22px 4px; }
+  .section{ padding:22px 22px 4px; position:relative; z-index:1; }
+
+  /* ---------- AMBIENT BACKLIGHT + PAGE-WIDE STARS ----------
+     Soft blurred color blobs behind the panels (shows through the
+     frosted-glass cards) plus a scattered star layer across the whole
+     view, not just the sky band — both fade in as it gets dark. */
+  #view-home{ position:relative; }
+  .phone-glow{
+    position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+    opacity:0; transition:opacity .5s ease;
+  }
+  .phone-glow .blob{ position:absolute; border-radius:50%; filter:blur(64px); }
+  .phone-glow .b1{ width:260px; height:260px; top:60px; left:-70px; background:var(--primary); opacity:0.55; }
+  .phone-glow .b2{ width:240px; height:240px; top:560px; right:-80px; background:var(--quaternary); opacity:0.5; }
+  .phone-glow .b3{ width:220px; height:220px; top:1000px; left:10px; background:var(--tertiary); opacity:0.4; }
+  .phone-glow .b4{ width:220px; height:220px; top:1500px; right:-60px; background:var(--secondary); opacity:0.4; }
+  .page-stars{
+    position:absolute; inset:0; z-index:0; pointer-events:none;
+    opacity:0; transition:opacity .5s ease;
+  }
+  .page-stars .star{ position:absolute; border-radius:50%; background:#fff; }
   .ai-pick{
     position:relative; border-radius:22px; overflow:hidden; height:220px;
     background:linear-gradient(135deg, var(--primary), var(--secondary) 55%, var(--quaternary));
@@ -329,6 +349,23 @@
     </div>
 
     <div id="view-home">
+    <div class="phone-glow" id="phone-glow">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+      <div class="blob b4"></div>
+    </div>
+    <div class="page-stars" id="page-stars">
+      <div class="star" style="width:2px;height:2px; top:8%; left:20%;"></div>
+      <div class="star" style="width:2px;height:2px; top:24%; left:88%;"></div>
+      <div class="star" style="width:3px;height:3px; top:38%; left:10%;"></div>
+      <div class="star" style="width:2px;height:2px; top:46%; left:70%;"></div>
+      <div class="star" style="width:2px;height:2px; top:58%; left:40%;"></div>
+      <div class="star" style="width:3px;height:3px; top:66%; left:92%;"></div>
+      <div class="star" style="width:2px;height:2px; top:74%; left:16%;"></div>
+      <div class="star" style="width:2px;height:2px; top:82%; left:55%;"></div>
+      <div class="star" style="width:2px;height:2px; top:90%; left:78%;"></div>
+    </div>
     <div class="sky-band" id="sky-band">
       <div class="sky-stars" id="sky-stars">
         <div class="star" style="width:2px;height:2px; top:14%; left:12%;"></div>
@@ -722,6 +759,8 @@
   const skyBand = document.getElementById('sky-band');
   const skyOrb = document.getElementById('sky-orb');
   const skyStars = document.getElementById('sky-stars');
+  const phoneGlow = document.getElementById('phone-glow');
+  const pageStars = document.getElementById('page-stars');
   const statusbar = document.getElementById('statusbar');
 
   function formatTime(hour){
@@ -762,6 +801,11 @@
 
     skyBand.style.background = `linear-gradient(180deg, ${th.skyTop} 0%, ${th.skyBottom} 100%)`;
     skyStars.style.opacity = th.stars;
+    // Backlight blobs + page-wide stars only read as an intentional
+    // aesthetic once it's meaningfully dark — fade them in with the same
+    // "how night is it" value that already drives the sky stars.
+    phoneGlow.style.opacity = th.stars;
+    pageStars.style.opacity = th.stars * 0.8;
 
     // Abstract orb: sweeps left-to-right across 24h, arcs highest at
     // midday and lowest at midnight — no literal sun/moon iconography,
@@ -775,6 +819,13 @@
     skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
 
     document.getElementById('greet-h1').innerHTML = `${th.greet}, Shane <span class="wave">👋</span>`;
+    // "Tonight" framing starts at dusk (h20) — just before it's officially
+    // night (h24/h0) — and switches back to "today" when the sun comes up
+    // at dawn (h5), matching the orb's own rise/set stops.
+    const isNightFraming = hour >= 20 || hour < 5;
+    document.getElementById('greet-sub').textContent = isNightFraming
+      ? "Ready for tonight's adventure?"
+      : "Ready for today's adventure?";
     document.getElementById('time-value').textContent = formatTime(hour);
     document.getElementById('statusbar-time').textContent = formatTime(hour).replace(/ (AM|PM)/, '');
     statusbar.style.color = th.text;
