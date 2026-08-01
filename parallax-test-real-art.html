@@ -90,7 +90,7 @@
   <div class="px-wrap">
     <div class="px-layers">
       <img class="px-layer" id="px-sky" src="assets/parallax/bay-area-test/sky.jpg" alt="">
-      <img class="px-layer" id="px-city" src="assets/parallax/bay-area-test/city.png" alt="">
+      <img class="px-layer" id="px-city" src="assets/parallax/bay-area-test/city_longer.png" alt="">
       <img class="px-layer" id="px-buildings" src="assets/parallax/bay-area-test/buildings.png" alt="">
       <img class="px-layer" id="px-people" src="assets/parallax/bay-area-test/people.png" alt="">
     </div>
@@ -121,19 +121,34 @@
   // (i.e. is the layer whose width sets the scrollable range).
   const SPEED = { sky: 0.1, city: 0.3, buildings: 0.55, people: 1 };
 
-  // city.png's skyline art sits far to the right of its 2928px canvas
-  // (buildings start around native x=1400) — at its slow 0.3 speed, the
-  // scroll range (capped by the foreground people layer's width) runs
-  // out long before that content could ever drift into view naturally.
-  // Give it a fixed base offset so the skyline is already in frame at
-  // rest, then it still drifts slower than the foreground as you scroll.
-  const CITY_SKYLINE_START_NATIVE = 1400;
+  // city_longer.png (5000px native) is a long empty water/sky lead-in
+  // followed by the skyline's low-rise edge starting around native
+  // x=3560, with the Space Needle first appearing at x=3914 (measured
+  // directly from the source pixels). Anchored to the END of the scroll
+  // rather than the start: at rest we're still in the empty lead-in (no
+  // buildings poking above the foreground street), and by the time the
+  // scroll maxes out we've drifted just to the city's edge — never far
+  // enough to reveal the needle.
+  //
+  // The gap between where buildings start (3560) and the needle (3914)
+  // is only 354px — narrower than one viewport's worth of the image at
+  // most screen sizes — so the safe target has to be derived from the
+  // *actual* viewport width (how much native-image-space is visible at
+  // once), not a fixed x position, or a wider device would scroll the
+  // needle right into view even while "aimed" at the same edge point.
+  const CITY_NEEDLE_NATIVE_X = 3914;
+  const CITY_SAFETY_MARGIN_NATIVE = 150;
   let cityBaseOffset = 0;
 
   function computeCityBaseOffset(){
-    if(!cityImg.naturalHeight) return;
+    if(!cityImg.naturalHeight || !peopleImg.naturalHeight) return;
     const scale = wrap.clientHeight / cityImg.naturalHeight;
-    cityBaseOffset = -(CITY_SKYLINE_START_NATIVE * scale);
+    const peopleWidth = peopleImg.getBoundingClientRect().width;
+    const maxScroll = Math.max(peopleWidth - wrap.clientWidth, 0);
+    const viewportNativeWidth = wrap.clientWidth / scale;
+    const edgeNativeX = CITY_NEEDLE_NATIVE_X - CITY_SAFETY_MARGIN_NATIVE - viewportNativeWidth;
+    const edgeRendered = edgeNativeX * scale;
+    cityBaseOffset = -(edgeRendered - maxScroll * SPEED.city);
   }
 
   function sizeSpacer(){
@@ -159,10 +174,10 @@
     requestAnimationFrame(() => { applyParallax(); ticking = false; });
   }, { passive: true });
 
-  window.addEventListener('resize', () => { sizeSpacer(); computeCityBaseOffset(); applyParallax(); });
-  if(peopleImg.complete) sizeSpacer(); else peopleImg.addEventListener('load', sizeSpacer);
-  if(cityImg.complete){ computeCityBaseOffset(); applyParallax(); }
-  else cityImg.addEventListener('load', () => { computeCityBaseOffset(); applyParallax(); });
+  function refreshLayout(){ sizeSpacer(); computeCityBaseOffset(); applyParallax(); }
+  window.addEventListener('resize', refreshLayout);
+  if(peopleImg.complete) refreshLayout(); else peopleImg.addEventListener('load', refreshLayout);
+  if(cityImg.complete) refreshLayout(); else cityImg.addEventListener('load', refreshLayout);
 
   // ---------- AUTO-SCROLL (Roku-style ambient drift) ----------
   const AUTO_SPEED = 0.45;
