@@ -78,30 +78,46 @@
     position:relative; z-index:2; transition:color .35s ease;
   }
 
-  /* ---------- ABSTRACT SKY BAND ----------
-     Not a literal window — just a gradient field + a single orb (sun/moon)
-     on an elliptical arc + a few star dots, all driven by the time value.
-     This whole block sits behind the greeting content. */
+  /* ---------- ROKU-STYLE PARALLAX HEADER ----------
+     Real illustrated layers (sky / buildings-street / people) standing in
+     for the old abstract gradient+orb sky band — same "Expedition Hub"
+     scene as parallax-concept.html, now doubling as the home header.
+     Auto-drifts ambiently and is drag/swipe-able; greeting content sits
+     on top behind a scrim for legibility. Day art only for now — night
+     art is a follow-up, so the time-of-day system no longer touches this
+     band directly (it still drives every other card/text color). */
   .sky-band{
-    position:relative; z-index:1; height:190px; overflow:hidden; transition:background .35s ease;
+    position:relative; z-index:1; height:230px; overflow:hidden; background:#bfe0f5;
   }
-  .sky-stars{ position:absolute; inset:0; transition:opacity .35s ease; }
   .star{ position:absolute; border-radius:50%; background:#fff; }
-  .sky-orb{
-    position:absolute; width:34px; height:34px; border-radius:50%;
-    transform:translate(-50%,-50%);
-    transition:background .35s ease, box-shadow .35s ease, left .5s ease, top .5s ease, opacity .4s ease;
+  .px-layers{ position:absolute; inset:0; z-index:1; }
+  .px-layer{
+    position:absolute; top:0; left:0; height:100%; width:auto; max-width:none;
+    will-change:transform; pointer-events:none; display:block;
+  }
+  .px-scroll{
+    position:absolute; inset:0; z-index:2; overflow-x:auto; overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .px-scroll::-webkit-scrollbar{ display:none; }
+  .px-spacer{ height:1px; }
+  .sky-band-scrim{
+    position:absolute; inset:0; z-index:3; pointer-events:none;
+    background:linear-gradient(180deg, rgba(20,16,32,0.15) 0%, rgba(20,16,32,0.55) 100%);
   }
   .home-header-inner{
-    position:absolute; inset:0; padding:14px 22px 0; z-index:2;
+    position:absolute; inset:0; padding:14px 22px 0; z-index:4;
   }
 
   .greet-row{ display:flex; align-items:center; gap:12px; }
-  .greet-row h1{ font-size:1.3rem; color:var(--text); transition:color .35s ease; }
-  .greet-sub{ opacity:0.68; font-size:0.9rem; margin-top:2px; color:var(--text); transition:color .35s ease; }
+  /* Fixed light color, not var(--text) — this text now sits on the
+     parallax scene's dark scrim rather than the old time-driven gradient,
+     so it needs to stay legible regardless of the time-of-day slider. */
+  .greet-row h1{ font-size:1.3rem; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.3); }
+  .greet-sub{ opacity:0.9; font-size:0.9rem; margin-top:2px; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.3); }
   .weather-line{
     display:flex; align-items:center; gap:6px; margin-top:10px; font-size:0.8rem;
-    opacity:0.62; color:var(--text); font-weight:600; transition:color .35s ease;
+    opacity:0.85; color:#fff; font-weight:600; text-shadow:0 1px 4px rgba(0,0,0,0.3);
   }
   .avatar{
     width:44px; height:44px; border-radius:50%; flex-shrink:0;
@@ -111,21 +127,24 @@
     box-shadow:0 4px 12px rgba(var(--shadow-rgb),0.3);
   }
 
+  /* Fixed frosted-white style, not the time-driven --card-bg/--text —
+     same reasoning as the greeting text above: this sits on the parallax
+     scrim now, not the old gradient, so it stays constant regardless of
+     the time-of-day slider. */
   .search-bar{
-    margin-top:16px; background:var(--card-bg); border:1px solid var(--card-border); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-radius:16px; padding:13px 16px;
+    margin-top:16px; background:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.6);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-radius:16px; padding:13px 16px;
     display:flex; align-items:center; gap:10px;
-    box-shadow:0 6px 18px rgba(var(--shadow-rgb),0.1);
-    transition:background-color .35s ease;
+    box-shadow:0 6px 18px rgba(20,16,32,0.25);
   }
   .search-bar input{
     border:none; outline:none; flex:1; font-family:'Nunito',sans-serif;
-    font-size:0.92rem; background:transparent; color:var(--text); transition:color .35s ease;
+    font-size:0.92rem; background:transparent; color:#2a2438;
   }
-  .search-bar input::placeholder{ color:var(--text); opacity:0.4; }
+  .search-bar input::placeholder{ color:#2a2438; opacity:0.4; }
   .icon-btn{
     width:34px; height:34px; border-radius:10px; display:flex; align-items:center;
-    justify-content:center; background:var(--bg); flex-shrink:0; color:var(--text);
-    transition:background-color .35s ease, color .35s ease;
+    justify-content:center; background:rgba(255,247,237,0.9); flex-shrink:0; color:#2a2438;
   }
 
   /* ---------- AI PICK CARD ---------- */
@@ -338,7 +357,7 @@
 </head>
 <body>
 
-<div class="page-note">Concept exploration — the sky band is an abstract gradient + orb, not a literal window. Drag the slider below to move through the day.</div>
+<div class="page-note">Concept exploration — header is a Roku-style parallax scene (drag to explore, auto-drifts on its own); day art only for now. The rest of the page still follows the time-of-day slider below.</div>
 
 <div class="phone" id="phone">
   <div class="scroll-area">
@@ -366,16 +385,15 @@
       <div class="star" style="width:2px;height:2px; top:90%; left:78%;"></div>
     </div>
     <div class="sky-band" id="sky-band">
-      <div class="sky-stars" id="sky-stars">
-        <div class="star" style="width:2px;height:2px; top:14%; left:12%;"></div>
-        <div class="star" style="width:3px;height:3px; top:22%; left:78%;"></div>
-        <div class="star" style="width:2px;height:2px; top:10%; left:52%;"></div>
-        <div class="star" style="width:2px;height:2px; top:34%; left:30%;"></div>
-        <div class="star" style="width:2px;height:2px; top:18%; left:88%;"></div>
-        <div class="star" style="width:3px;height:3px; top:38%; left:64%;"></div>
-        <div class="star" style="width:2px;height:2px; top:28%; left:6%;"></div>
+      <div class="px-layers">
+        <img class="px-layer" id="px-sky" src="assets/parallax/bay-area-test/sky.jpg" alt="">
+        <img class="px-layer" id="px-buildings" src="assets/parallax/bay-area-test/buildings.png" alt="">
+        <img class="px-layer" id="px-people" src="assets/parallax/bay-area-test/people.png" alt="">
       </div>
-      <div class="sky-orb" id="sky-orb"></div>
+      <div class="px-scroll" id="px-scroll">
+        <div class="px-spacer" id="px-spacer"></div>
+      </div>
+      <div class="sky-band-scrim"></div>
       <div class="home-header-inner">
         <div class="greet-row">
           <div class="avatar">S</div>
@@ -762,10 +780,6 @@
   }
 
   const phone = document.getElementById('phone');
-  const skyBand = document.getElementById('sky-band');
-  const skyOrb = document.getElementById('sky-orb');
-  let wasDaytime = null;
-  const skyStars = document.getElementById('sky-stars');
   const phoneGlow = document.getElementById('phone-glow');
   const pageStars = document.getElementById('page-stars');
   const statusbar = document.getElementById('statusbar');
@@ -806,57 +820,12 @@
     phone.style.setProperty('--raised-fg', isLight ? '#ffffff' : th.bg);
     phone.style.setProperty('--shadow-rgb', hexToRgb(th.text).join(','));
 
-    skyBand.style.background = `linear-gradient(180deg, ${th.skyTop} 0%, ${th.skyBottom} 100%)`;
-    skyStars.style.opacity = th.stars;
     // Backlight blobs + page-wide stars only read as an intentional
     // aesthetic once it's meaningfully dark — fade them in with the same
-    // "how night is it" value that already drives the sky stars.
+    // "how night is it" value that used to also drive the sky band's
+    // stars (now retired — see the parallax header comment up top).
     phoneGlow.style.opacity = th.stars;
     pageStars.style.opacity = th.stars * 0.8;
-
-    // Abstract orb: the sun rises off-screen bottom-left at sunrise, arcs
-    // through the top at midday, and exits off-screen bottom-right at
-    // sunset — then the moon runs the same bottom-left -> top ->
-    // bottom-right arc across the night, appearing at sunset and
-    // disappearing when the sun rises. th.orb/th.glow already interpolate
-    // to a cool white-violet during night stops, so the same circle reads
-    // as sun by day and moon by night without separate art.
-    //
-    // The two arcs sit at different x positions at the handoff instant
-    // (sun exits at 115%, moon must enter at -15%), so whenever the
-    // sun/moon boundary is crossed, the orb is snapped to its new
-    // position while fully transparent (transition disabled for that one
-    // frame) and then faded back in — a clean appear/disappear instead of
-    // a visible slide across the sky.
-    const SUNRISE_H = 5.5, SUNSET_H = 19.5;
-    const isDaytime = hour >= SUNRISE_H && hour <= SUNSET_H;
-    const ORB_MARGIN = 15;
-    let t;
-    if (isDaytime) {
-      t = (hour - SUNRISE_H) / (SUNSET_H - SUNRISE_H);
-    } else {
-      const hNorm = hour < SUNRISE_H ? hour + 24 : hour;
-      t = (hNorm - SUNSET_H) / (SUNRISE_H + 24 - SUNSET_H);
-    }
-    const xPct = -ORB_MARGIN + t * (100 + ORB_MARGIN * 2);
-    const yPct = 88 - 78 * Math.sin(t * Math.PI);
-
-    if (wasDaytime !== null && isDaytime !== wasDaytime) {
-      skyOrb.style.transition = 'none';
-      skyOrb.style.opacity = '0';
-      skyOrb.style.left = xPct + '%';
-      skyOrb.style.top = yPct + '%';
-      void skyOrb.offsetWidth;
-      skyOrb.style.transition = '';
-      requestAnimationFrame(() => { skyOrb.style.opacity = '1'; });
-    } else {
-      skyOrb.style.left = xPct + '%';
-      skyOrb.style.top = yPct + '%';
-      skyOrb.style.opacity = '1';
-    }
-    wasDaytime = isDaytime;
-    skyOrb.style.background = th.orb;
-    skyOrb.style.boxShadow = `0 0 34px 14px ${th.glow}`;
 
     document.getElementById('greet-h1').innerHTML = th.greet + ', Shane';
     // "Tonight" framing starts at dusk (h20) — just before it's officially
@@ -906,6 +875,73 @@
   // controls take over from there.
   const now = new Date();
   applyTime(now.getHours() + now.getMinutes() / 60);
+
+  // ---------- ROKU-STYLE PARALLAX HEADER ----------
+  // Three real illustrated layers (sky / buildings-street / people) at
+  // different speeds, same mechanism as parallax-concept.html: drag/swipe
+  // to explore manually, or let it auto-drift ambiently like a Roku home
+  // background. Day art only for now.
+  (function initParallaxHeader(){
+    const wrap = document.getElementById('sky-band');
+    const pxScroll = document.getElementById('px-scroll');
+    const pxSpacer = document.getElementById('px-spacer');
+    const skyImg = document.getElementById('px-sky');
+    const buildingsImg = document.getElementById('px-buildings');
+    const peopleImg = document.getElementById('px-people');
+
+    // Speed factors: 0 = pinned to viewport, 1 = moves 1:1 with the drag
+    // (i.e. is the layer whose width sets the scrollable range).
+    const SPEED = { sky: 0.15, buildings: 0.5, people: 1 };
+
+    function sizeSpacer(){
+      const w = peopleImg.getBoundingClientRect().width;
+      pxSpacer.style.width = Math.max(w, wrap.clientWidth) + 'px';
+    }
+
+    function applyParallax(){
+      const s = pxScroll.scrollLeft;
+      skyImg.style.transform = `translateX(${-s * SPEED.sky}px)`;
+      buildingsImg.style.transform = `translateX(${-s * SPEED.buildings}px)`;
+      peopleImg.style.transform = `translateX(${-s * SPEED.people}px)`;
+    }
+
+    let ticking = false;
+    pxScroll.addEventListener('scroll', () => {
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { applyParallax(); ticking = false; });
+    }, { passive: true });
+
+    window.addEventListener('resize', sizeSpacer);
+    if(peopleImg.complete) sizeSpacer(); else peopleImg.addEventListener('load', sizeSpacer);
+
+    // ---------- AUTO-SCROLL (ambient drift, ping-pong at the edges) ----------
+    const AUTO_SPEED = 0.35;
+    let autoDir = 1;
+    let autoPaused = false;
+    let resumeTimer = null;
+
+    function autoStep(){
+      if(!autoPaused){
+        const max = pxScroll.scrollWidth - pxScroll.clientWidth;
+        let next = pxScroll.scrollLeft + AUTO_SPEED * autoDir;
+        if(next >= max){ next = max; autoDir = -1; }
+        else if(next <= 0){ next = 0; autoDir = 1; }
+        pxScroll.scrollLeft = next;
+      }
+      requestAnimationFrame(autoStep);
+    }
+    requestAnimationFrame(autoStep);
+
+    function pauseAuto(){
+      autoPaused = true;
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => { autoPaused = false; }, 2500);
+    }
+    ['pointerdown', 'wheel', 'touchstart'].forEach(evt => {
+      pxScroll.addEventListener(evt, pauseAuto, { passive: true });
+    });
+  })();
 
   // ---------- WEATHER (best-effort; static fallback stays if it fails) ----------
   function describeWeather(code, isDay) {
