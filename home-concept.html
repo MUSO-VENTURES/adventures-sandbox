@@ -43,10 +43,32 @@
     position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
     background:#fff; border-radius:20px; padding:14px 20px; width:min(420px, 92vw);
     box-shadow:0 12px 32px rgba(0,0,0,0.18); z-index:50; font-family:'Nunito',sans-serif;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .time-control.hidden{
+    transform:translateX(-50%) translateY(calc(100% + 20px));
+    opacity:0; pointer-events:none;
+  }
+  .time-control-close{
+    position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%;
+    border:none; background:#f2ede4; color:#2a2438; font-size:0.9rem; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .time-control-close:hover{ background:#e8e0d2; }
+  .time-control-reopen{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%) translateY(0);
+    background:#2a2438; color:#fff; border:none; border-radius:999px;
+    padding:10px 18px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:0.82rem;
+    box-shadow:0 12px 28px rgba(0,0,0,0.25); z-index:50; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .time-control-reopen.hidden{
+    transform:translateX(-50%) translateY(calc(100% + 20px)); opacity:0; pointer-events:none;
   }
   .time-control-eyebrow{
     font-size:0.66rem; font-weight:800; letter-spacing:0.06em; color:#9a9188;
-    margin-bottom:8px; text-align:center;
+    margin-bottom:8px; text-align:center; padding-right:20px;
   }
   .time-control-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
   .time-control-label{ font-size:0.8rem; font-weight:700; color:#2a2438; }
@@ -602,7 +624,8 @@
   </div>
 </div>
 
-<div class="time-control">
+<div class="time-control" id="time-control">
+  <button type="button" class="time-control-close" id="time-control-close" aria-label="Close preview control">&times;</button>
   <div class="time-control-eyebrow">PREVIEW CONTROL — NOT PART OF THE APP</div>
   <div class="time-control-row">
     <span class="time-control-label">Scrub through the day to preview the theme</span>
@@ -618,7 +641,23 @@
   </div>
 </div>
 
+<button type="button" class="time-control-reopen hidden" id="time-control-reopen">🕐 Preview control</button>
+
 <script>
+  // Close/reopen the preview control so it's possible to see the whole
+  // phone (bottom nav included) while previewing, without losing the
+  // time controls entirely.
+  const timeControl = document.getElementById('time-control');
+  const timeControlReopen = document.getElementById('time-control-reopen');
+  document.getElementById('time-control-close').addEventListener('click', () => {
+    timeControl.classList.add('hidden');
+    timeControlReopen.classList.remove('hidden');
+  });
+  timeControlReopen.addEventListener('click', () => {
+    timeControl.classList.remove('hidden');
+    timeControlReopen.classList.add('hidden');
+  });
+
   const viewHome = document.getElementById('view-home');
   const viewProfile = document.getElementById('view-profile');
   document.querySelectorAll('.tab-item:not(.raised)').forEach(tab => {
