@@ -149,6 +149,11 @@
 
   /* ---------- AI PICK CARD ---------- */
   .section{ padding:22px 22px 4px; position:relative; z-index:1; }
+  /* Pull the AI-pick card up so it overlaps the bottom of the parallax
+     header instead of sitting in a hard-edged strip below it — the
+     header's own scrim already darkens toward the bottom, which helps
+     the card read cleanly against the illustration behind it. */
+  .sky-band + .section{ margin-top:-60px; z-index:5; }
 
   /* ---------- AMBIENT BACKLIGHT + PAGE-WIDE STARS ----------
      Soft blurred color blobs behind the panels (shows through the
