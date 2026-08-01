@@ -379,6 +379,10 @@
     body{ padding:0; }
     .phone{ width:100vw; height:100vh; max-height:100vh; border-radius:0; box-shadow:none; }
     .time-control{ bottom:0; border-radius:20px 20px 0 0; }
+    /* At this width .phone fills the real viewport, so the in-app bottom
+       tab bar and this fixed-position reopen pill would otherwise land
+       in the same spot — lift the pill clear of it. */
+    .time-control-reopen{ bottom:90px; }
   }
 </style>
 </head>
