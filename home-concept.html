@@ -147,7 +147,11 @@
     display:flex; align-items:center; justify-content:center;
     color:#fff; font-family:'Fredoka',sans-serif; font-weight:700; font-size:1rem;
     box-shadow:0 4px 12px rgba(var(--shadow-rgb),0.3);
+    overflow:hidden;
   }
+  /* Placeholder profile photo until the real edit-profile feature picks
+     a source for this — swap for the user's actual avatar/upload then. */
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
 
   /* Fixed frosted-white style, not the time-driven --card-bg/--text —
      same reasoning as the greeting text above: this sits on the parallax
@@ -427,7 +431,7 @@
       <div class="sky-band-scrim"></div>
       <div class="home-header-inner">
         <div class="greet-row">
-          <div class="avatar">S</div>
+          <div class="avatar"><img src="assets/profile/shane-avatar.jpg" alt="Shane"></div>
           <div>
             <h1 id="greet-h1">Good evening, Shane</h1>
             <div class="greet-sub" id="greet-sub">Ready for tonight's adventure?</div>
@@ -556,7 +560,7 @@
     <div id="view-profile" hidden>
       <div class="section">
         <div class="profile-head">
-          <div class="avatar" style="width:64px; height:64px; font-size:1.3rem;">S</div>
+          <div class="avatar" style="width:64px; height:64px; font-size:1.3rem;"><img src="assets/profile/shane-avatar.jpg" alt="Shane"></div>
           <div>
             <h2 style="font-size:1.2rem; color:var(--text);">Shane</h2>
             <div class="crew-sub">Level 7 Explorer</div>
