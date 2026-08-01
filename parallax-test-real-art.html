@@ -121,6 +121,21 @@
   // (i.e. is the layer whose width sets the scrollable range).
   const SPEED = { sky: 0.1, city: 0.3, buildings: 0.55, people: 1 };
 
+  // city.png's skyline art sits far to the right of its 2928px canvas
+  // (buildings start around native x=1400) — at its slow 0.3 speed, the
+  // scroll range (capped by the foreground people layer's width) runs
+  // out long before that content could ever drift into view naturally.
+  // Give it a fixed base offset so the skyline is already in frame at
+  // rest, then it still drifts slower than the foreground as you scroll.
+  const CITY_SKYLINE_START_NATIVE = 1400;
+  let cityBaseOffset = 0;
+
+  function computeCityBaseOffset(){
+    if(!cityImg.naturalHeight) return;
+    const scale = wrap.clientHeight / cityImg.naturalHeight;
+    cityBaseOffset = -(CITY_SKYLINE_START_NATIVE * scale);
+  }
+
   function sizeSpacer(){
     // people.naturalWidth is already the on-screen width once height:100%
     // has scaled it (all three source images share one native size, so
@@ -132,7 +147,7 @@
   function applyParallax(){
     const s = pxScroll.scrollLeft;
     skyImg.style.transform = `translateX(${-s * SPEED.sky}px)`;
-    cityImg.style.transform = `translateX(${-s * SPEED.city}px)`;
+    cityImg.style.transform = `translateX(${cityBaseOffset - s * SPEED.city}px)`;
     buildingsImg.style.transform = `translateX(${-s * SPEED.buildings}px)`;
     peopleImg.style.transform = `translateX(${-s * SPEED.people}px)`;
   }
@@ -144,8 +159,10 @@
     requestAnimationFrame(() => { applyParallax(); ticking = false; });
   }, { passive: true });
 
-  window.addEventListener('resize', sizeSpacer);
+  window.addEventListener('resize', () => { sizeSpacer(); computeCityBaseOffset(); applyParallax(); });
   if(peopleImg.complete) sizeSpacer(); else peopleImg.addEventListener('load', sizeSpacer);
+  if(cityImg.complete){ computeCityBaseOffset(); applyParallax(); }
+  else cityImg.addEventListener('load', () => { computeCityBaseOffset(); applyParallax(); });
 
   // ---------- AUTO-SCROLL (Roku-style ambient drift) ----------
   const AUTO_SPEED = 0.45;
