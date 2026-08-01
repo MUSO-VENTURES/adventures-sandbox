@@ -422,6 +422,7 @@
     <div class="sky-band" id="sky-band">
       <div class="px-layers">
         <img class="px-layer" id="px-sky" src="assets/parallax/bay-area-test/sky.jpg" alt="">
+        <img class="px-layer" id="px-city" src="assets/parallax/bay-area-test/city.png" alt="">
         <img class="px-layer" id="px-buildings" src="assets/parallax/bay-area-test/buildings.png" alt="">
         <img class="px-layer" id="px-people" src="assets/parallax/bay-area-test/people.png" alt="">
       </div>
@@ -929,21 +930,23 @@
   applyTime(now.getHours() + now.getMinutes() / 60);
 
   // ---------- ROKU-STYLE PARALLAX HEADER ----------
-  // Three real illustrated layers (sky / buildings-street / people) at
-  // different speeds, same mechanism as parallax-concept.html: drag/swipe
-  // to explore manually, or let it auto-drift ambiently like a Roku home
-  // background. Day art only for now.
+  // Four real illustrated depth layers at different speeds, same
+  // mechanism as parallax-concept.html: drag/swipe to explore manually,
+  // or let it auto-drift ambiently like a Roku home background.
+  // LVL1 sky (furthest) -> LVL2 cityscape -> LVL3 downtown buildings ->
+  // LVL4 people (closest, foreground). Day art only for now.
   (function initParallaxHeader(){
     const wrap = document.getElementById('sky-band');
     const pxScroll = document.getElementById('px-scroll');
     const pxSpacer = document.getElementById('px-spacer');
     const skyImg = document.getElementById('px-sky');
+    const cityImg = document.getElementById('px-city');
     const buildingsImg = document.getElementById('px-buildings');
     const peopleImg = document.getElementById('px-people');
 
     // Speed factors: 0 = pinned to viewport, 1 = moves 1:1 with the drag
     // (i.e. is the layer whose width sets the scrollable range).
-    const SPEED = { sky: 0.15, buildings: 0.5, people: 1 };
+    const SPEED = { sky: 0.1, city: 0.3, buildings: 0.55, people: 1 };
 
     function sizeSpacer(){
       const w = peopleImg.getBoundingClientRect().width;
@@ -953,6 +956,7 @@
     function applyParallax(){
       const s = pxScroll.scrollLeft;
       skyImg.style.transform = `translateX(${-s * SPEED.sky}px)`;
+      cityImg.style.transform = `translateX(${-s * SPEED.city}px)`;
       buildingsImg.style.transform = `translateX(${-s * SPEED.buildings}px)`;
       peopleImg.style.transform = `translateX(${-s * SPEED.people}px)`;
     }

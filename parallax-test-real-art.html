@@ -90,6 +90,7 @@
   <div class="px-wrap">
     <div class="px-layers">
       <img class="px-layer" id="px-sky" src="assets/parallax/bay-area-test/sky.jpg" alt="">
+      <img class="px-layer" id="px-city" src="assets/parallax/bay-area-test/city.png" alt="">
       <img class="px-layer" id="px-buildings" src="assets/parallax/bay-area-test/buildings.png" alt="">
       <img class="px-layer" id="px-people" src="assets/parallax/bay-area-test/people.png" alt="">
     </div>
@@ -103,7 +104,7 @@
 
   <div class="below">
     <h3>What you're looking at</h3>
-    <p>Three real illustrated layers moving at different speeds as you drag: sky (slowest — distant, barely shifts), buildings (medium), people (fastest — this is the foreground and the layer that defines how far you can scroll). All three source images share the same canvas size, so they stay pixel-locked to each other at rest and only separate as you scroll.</p>
+    <p>Four real illustrated depth layers moving at different speeds as you drag: sky (slowest — furthest back), cityscape (distant skyline), downtown buildings (midground), people (fastest — this is the foreground and the layer that defines how far you can scroll). All four source images share the same canvas size, so they stay pixel-locked to each other at rest and only separate as you scroll. The buildings layer has real alpha transparency, so the cityscape shows through its gaps.</p>
   </div>
 </div>
 
@@ -112,12 +113,13 @@
   const pxScroll = document.getElementById('px-scroll');
   const pxSpacer = document.getElementById('px-spacer');
   const skyImg = document.getElementById('px-sky');
+  const cityImg = document.getElementById('px-city');
   const buildingsImg = document.getElementById('px-buildings');
   const peopleImg = document.getElementById('px-people');
 
   // Speed factors: 0 = pinned to viewport, 1 = moves 1:1 with the drag
   // (i.e. is the layer whose width sets the scrollable range).
-  const SPEED = { sky: 0.15, buildings: 0.5, people: 1 };
+  const SPEED = { sky: 0.1, city: 0.3, buildings: 0.55, people: 1 };
 
   function sizeSpacer(){
     // people.naturalWidth is already the on-screen width once height:100%
@@ -130,6 +132,7 @@
   function applyParallax(){
     const s = pxScroll.scrollLeft;
     skyImg.style.transform = `translateX(${-s * SPEED.sky}px)`;
+    cityImg.style.transform = `translateX(${-s * SPEED.city}px)`;
     buildingsImg.style.transform = `translateX(${-s * SPEED.buildings}px)`;
     peopleImg.style.transform = `translateX(${-s * SPEED.people}px)`;
   }
