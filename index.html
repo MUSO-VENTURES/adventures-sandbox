@@ -924,11 +924,12 @@
 <style>
   /* ---------- MUSO POP-INS: peek-ins + fly-throughs ----------
      Data-driven mascot easter egg. Runs today on the static
-     assets/profile/shane-avatar.jpg photo; once real sprite sheets
-     exist, fill in a `sprite:{src,cols,rows,frameCount,fps}` on any
-     entry in MUSO_PEEKS / MUSO_FLYTHROUGHS below (see the JS at the
-     bottom of the page) and that animation starts playing frames
-     automatically — no other code changes needed. */
+     assets/profile/shane-avatar.jpg photo; movement (MUSO_PEEKS /
+     MUSO_FLYTHROUGHS) and expression (MUSO_EMOTIONS) are independent
+     catalogs picked and paired at random each time one fires (see the
+     JS at the bottom of the page) — fill in a
+     `sprite:{src,cols,rows,frameCount,fps}` on any MUSO_EMOTIONS entry
+     and it starts playing frames automatically, no other changes needed. */
   #muso-stage{ position:fixed; inset:0; z-index:9999; pointer-events:none; overflow:hidden; }
 
   .muso-toggle{
@@ -2388,28 +2389,43 @@
   const TOGGLE = document.getElementById('musoToggle');
   const FALLBACK_IMG = 'assets/profile/shane-avatar.jpg';
 
-  // ---- Animation catalog -------------------------------------------------
-  // `sprite` is null until real sprite sheets exist. Fill one in as:
-  //   sprite: { src:'assets/sprites/peek-top.png', cols:4, rows:2, frameCount:7, fps:10 }
-  // cols/rows = the grid the sheet is laid out in, frameCount = how many
-  // of those cells are real frames (reading left-to-right, top-to-bottom),
-  // fps = playback speed. No pixel dimensions needed — frames are stretched
-  // to fill the on-screen box (120px circle for peeks, 340px card for
-  // fly-throughs), so keep each frame's own aspect square-ish.
+  // ---- Movement catalog ---------------------------------------------------
+  // Pure motion — no character art here. Each fire pairs one of these with
+  // a random entry from MUSO_EMOTIONS below, so N emotions x M movements
+  // gives N*M distinct combinations from N sprite sheets, not N*M of them.
   const MUSO_PEEKS = [
-    { id:'peek-top',    anim:'musoPeekTop',    edge:'top',    sprite:null },
-    { id:'peek-bottom', anim:'musoPeekBottom', edge:'bottom', sprite:null },
-    { id:'peek-left',   anim:'musoPeekLeft',   edge:'left',   sprite:null },
-    { id:'peek-right',  anim:'musoPeekRight',  edge:'right',  sprite:null },
+    { id:'peek-top',    anim:'musoPeekTop',    edge:'top' },
+    { id:'peek-bottom', anim:'musoPeekBottom', edge:'bottom' },
+    { id:'peek-left',   anim:'musoPeekLeft',   edge:'left' },
+    { id:'peek-right',  anim:'musoPeekRight',  edge:'right' },
   ];
   // Fly-throughs: background -> foreground -> through the camera's plane
   // of view. Each is a distinct flight path; add as many more as you like.
   const MUSO_FLYTHROUGHS = [
-    { id:'fly-straight', anim:'musoFlyStraight',   dur:2.6, sprite:null },
-    { id:'fly-diag-tl',  anim:'musoFlyDiagonalTL', dur:2.8, sprite:null },
-    { id:'fly-diag-br',  anim:'musoFlyDiagonalBR', dur:2.8, sprite:null },
-    { id:'fly-spiral',   anim:'musoFlySpiral',     dur:3.0, sprite:null },
-    { id:'fly-swoop',    anim:'musoFlySwoop',      dur:2.4, sprite:null },
+    { id:'fly-straight', anim:'musoFlyStraight',   dur:2.6 },
+    { id:'fly-diag-tl',  anim:'musoFlyDiagonalTL', dur:2.8 },
+    { id:'fly-diag-br',  anim:'musoFlyDiagonalBR', dur:2.8 },
+    { id:'fly-spiral',   anim:'musoFlySpiral',     dur:3.0 },
+    { id:'fly-swoop',    anim:'musoFlySwoop',      dur:2.4 },
+  ];
+
+  // ---- Emotion catalog -----------------------------------------------------
+  // Independent 5-frame expression clips, randomly paired with whichever
+  // movement fires above. `sprite` is null until a real sheet exists — fill
+  // one in as:
+  //   sprite: { src:'assets/sprites/emotion-happy.png', cols:5, rows:1, frameCount:5, fps:7 }
+  // One PNG per emotion, a 1x5 horizontal strip (cols:5, rows:1,
+  // frameCount:5), transparent background, frames square-ish and the
+  // character at consistent scale/position across all 5 so it doesn't
+  // jitter when stepping. Leave entries at sprite:null until their art is
+  // ready — an emotion with no sprite yet just falls back to the static
+  // photo when picked, so you can ship these one at a time.
+  const MUSO_EMOTIONS = [
+    { id:'neutral',   sprite:null },
+    { id:'happy',     sprite:null },
+    { id:'surprised', sprite:null },
+    { id:'laughing',  sprite:null },
+    { id:'wink',      sprite:null },
   ];
   const CALLOUT_STYLES = [
     { text:'MUSO!',    css:'font-size:4.5rem; letter-spacing:1px; color:var(--coral);' },
@@ -2421,7 +2437,6 @@
   const PEEK_TAGS = ['Muso!', 'hey!', '👋 Muso', "it's me"];
 
   let enabled = localStorage.getItem('musoPopinsEnabled') !== 'off';
-  let lastId = null;
   let timer = null;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -2438,13 +2453,20 @@
   });
   setToggleUI();
 
-  function pick(arr){
-    let choice;
-    do { choice = arr[Math.floor(Math.random()*arr.length)]; }
-    while (arr.length > 1 && choice.id === lastId);
-    lastId = choice.id;
-    return choice;
+  // Returns a picker bound to its own "last choice" so movements and
+  // emotions each avoid repeating themselves back-to-back independently.
+  function makePicker(){
+    let lastId = null;
+    return function pick(arr){
+      let choice;
+      do { choice = arr[Math.floor(Math.random()*arr.length)]; }
+      while (arr.length > 1 && choice.id === lastId);
+      lastId = choice.id;
+      return choice;
+    };
   }
+  const pickMovement = makePicker();
+  const pickEmotion = makePicker();
 
   // Drives an element's background through a sprite sheet's frames on a
   // timer, independent of whatever CSS transform animation is moving it
@@ -2471,14 +2493,15 @@
   }
 
   function runPeek(){
-    const cfg = pick(MUSO_PEEKS);
+    const cfg = pickMovement(MUSO_PEEKS);
+    const emotion = pickEmotion(MUSO_EMOTIONS);
     const el = document.createElement('div');
     el.className = 'muso-sprite is-peek';
     el.style[cfg.edge] = '-120px'; // exactly the peek circle's own size (120px) -> fully hidden at rest
     if (cfg.edge === 'top' || cfg.edge === 'bottom') el.style.left = (10 + Math.random()*70) + '%';
     else el.style.top = (10 + Math.random()*70) + '%';
     el.style.animation = `${cfg.anim} 3.4s ease-in-out forwards`;
-    const frameTimer = applySprite(el, cfg);
+    const frameTimer = applySprite(el, emotion);
     STAGE.appendChild(el);
 
     const tag = document.createElement('div');
@@ -2501,7 +2524,8 @@
   }
 
   function runFlythrough(){
-    const cfg = pick(MUSO_FLYTHROUGHS);
+    const cfg = pickMovement(MUSO_FLYTHROUGHS);
+    const emotion = pickEmotion(MUSO_EMOTIONS);
     const style = CALLOUT_STYLES[Math.floor(Math.random()*CALLOUT_STYLES.length)];
     document.documentElement.style.setProperty('--muso-dur', cfg.dur + 's');
 
@@ -2511,7 +2535,7 @@
     const el = document.createElement('div');
     el.className = 'muso-sprite is-fly';
     el.style.animation = `${cfg.anim} ${cfg.dur}s cubic-bezier(.2,.7,.3,1) forwards`;
-    const frameTimer = applySprite(el, cfg);
+    const frameTimer = applySprite(el, emotion);
 
     const callout = document.createElement('div');
     callout.className = 'muso-callout is-active';
