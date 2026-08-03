@@ -920,8 +920,180 @@
     text-align:left;
   }
 </style>
+
+<style>
+  /* ---------- MUSO POP-INS: peek-ins + fly-throughs ----------
+     Data-driven mascot easter egg. Runs today on the static
+     assets/profile/shane-avatar.jpg photo; once real sprite sheets
+     exist, fill in a `sprite:{src,cols,rows,frameCount,fps}` on any
+     entry in MUSO_PEEKS / MUSO_FLYTHROUGHS below (see the JS at the
+     bottom of the page) and that animation starts playing frames
+     automatically — no other code changes needed. */
+  #muso-stage{ position:fixed; inset:0; z-index:9999; pointer-events:none; overflow:hidden; }
+
+  .muso-toggle{
+    position:fixed; left:14px; bottom:14px; z-index:10000;
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(42,36,56,0.55); color:#fff; border:none;
+    font-size:1.1rem; cursor:pointer; pointer-events:auto;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    transition:opacity .2s, transform .2s;
+    opacity:0.55;
+  }
+  .muso-toggle:hover{ opacity:1; transform:scale(1.08); }
+  .muso-toggle[data-on="false"]{ filter:grayscale(1); }
+
+  .muso-backdrop{
+    position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 50%, rgba(232,80,63,0.35), rgba(42,36,56,0.78));
+    opacity:0; pointer-events:none;
+  }
+  .muso-backdrop.is-active{ animation:musoBackdropPulse var(--muso-dur,2.6s) ease-in-out forwards; pointer-events:auto; }
+  @keyframes musoBackdropPulse{
+    0%{opacity:0;} 18%{opacity:1;} 78%{opacity:1;} 100%{opacity:0;}
+  }
+
+  .muso-sprite{
+    position:absolute;
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:cover;
+    will-change:transform, opacity, filter;
+  }
+  .muso-sprite.is-peek{
+    width:120px; height:120px; border-radius:50%;
+    border:4px solid #fff7ed; box-shadow:0 10px 30px rgba(42,36,56,0.35);
+  }
+  .muso-sprite.is-fly{
+    width:340px; height:340px; border-radius:28px;
+    left:50%; top:50%; margin-left:-170px; margin-top:-170px;
+    box-shadow:0 20px 60px rgba(42,36,56,0.45);
+  }
+
+  .muso-callout{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    font-family:'Fredoka', sans-serif; font-weight:700;
+    color:#fff; text-shadow:0 4px 18px rgba(0,0,0,0.4);
+    white-space:nowrap; opacity:0; pointer-events:none;
+  }
+  .muso-callout.is-active{ animation:musoCalloutPunch var(--muso-dur,2.6s) ease-out forwards; }
+  @keyframes musoCalloutPunch{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(0.4);}
+    22%{opacity:1; transform:translate(-50%,-50%) scale(1.08);}
+    30%{transform:translate(-50%,-50%) scale(1);}
+    75%{opacity:1;}
+    100%{opacity:0; transform:translate(-50%,-50%) scale(1.15);}
+  }
+
+  .muso-tag{
+    position:absolute; font-family:'Fredoka', sans-serif; font-weight:700;
+    background:var(--coral); color:#fff; padding:4px 12px; border-radius:999px;
+    font-size:0.85rem; white-space:nowrap; box-shadow:0 6px 16px rgba(0,0,0,0.25);
+    opacity:0; transition:opacity .3s;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #muso-stage, .muso-toggle{ display:none !important; }
+  }
+
+  /* Peek-ins: character pokes in from an edge, holds, retreats.
+     The element's resting position (set inline per-edge in JS) sits
+     exactly one box-length off that edge, fully hidden; these keyframes
+     translate it back toward 0 by a fixed px amount to reveal it, then
+     return it to 0 (= fully hidden again) at 100%. */
+  @keyframes musoPeekTop{
+    0%{ transform:translateY(0px) rotate(0deg); }
+    12%{ transform:translateY(78px) rotate(-4deg); }
+    20%{ transform:translateY(70px) rotate(3deg); }
+    28%{ transform:translateY(74px) rotate(-2deg); }
+    82%{ transform:translateY(72px) rotate(2deg); }
+    100%{ transform:translateY(0px) rotate(0deg); }
+  }
+  @keyframes musoPeekBottom{
+    0%{ transform:translateY(0px) rotate(0deg); }
+    12%{ transform:translateY(-78px) rotate(4deg); }
+    20%{ transform:translateY(-70px) rotate(-3deg); }
+    28%{ transform:translateY(-74px) rotate(2deg); }
+    82%{ transform:translateY(-72px) rotate(-2deg); }
+    100%{ transform:translateY(0px) rotate(0deg); }
+  }
+  @keyframes musoPeekLeft{
+    0%{ transform:translateX(0px) rotate(0deg); }
+    12%{ transform:translateX(78px) rotate(-4deg); }
+    20%{ transform:translateX(70px) rotate(3deg); }
+    28%{ transform:translateX(74px) rotate(-2deg); }
+    82%{ transform:translateX(72px) rotate(2deg); }
+    100%{ transform:translateX(0px) rotate(0deg); }
+  }
+  @keyframes musoPeekRight{
+    0%{ transform:translateX(0px) rotate(0deg); }
+    12%{ transform:translateX(-78px) rotate(4deg); }
+    20%{ transform:translateX(-70px) rotate(-3deg); }
+    28%{ transform:translateX(-74px) rotate(2deg); }
+    82%{ transform:translateX(-72px) rotate(-2deg); }
+    100%{ transform:translateX(0px) rotate(0deg); }
+  }
+
+  /* Fly-throughs: glides from background (small, soft-focus) to
+     foreground (fullscreen takeover) and on through the camera's
+     plane of view (overscaled + faded, like it flew past the lens).
+     The element is already centered via left:50%/margin (see
+     .muso-sprite.is-fly below), so these keyframes only need to add
+     scale/rotate/lateral-offset on top of that — no re-centering
+     transform here, or it stacks and drags everything off-center.
+     Each keyframe set is a different flight path; add more freely. */
+  @keyframes musoFlyStraight{
+    0%{ transform:scale(0.08); opacity:0; filter:blur(6px); }
+    14%{ opacity:0.85; filter:blur(3px); }
+    45%{ transform:scale(1); opacity:1; filter:blur(0); }
+    70%{ transform:scale(2.6); opacity:1; }
+    100%{ transform:scale(4.4); opacity:0; }
+  }
+  @keyframes musoFlyDiagonalTL{
+    0%{ transform:translate(-160%,-160%) scale(0.08) rotate(-6deg); opacity:0; filter:blur(6px); }
+    16%{ opacity:0.85; }
+    45%{ transform:translate(-70%,-70%) scale(1) rotate(0deg); opacity:1; filter:blur(0); }
+    70%{ transform:translate(0%,0%) scale(2.4) rotate(3deg); opacity:1; }
+    100%{ transform:translate(110%,110%) scale(4) rotate(6deg); opacity:0; }
+  }
+  @keyframes musoFlyDiagonalBR{
+    0%{ transform:translate(160%,160%) scale(0.08) rotate(6deg); opacity:0; filter:blur(6px); }
+    16%{ opacity:0.85; }
+    45%{ transform:translate(70%,70%) scale(1) rotate(0deg); opacity:1; filter:blur(0); }
+    70%{ transform:translate(0%,0%) scale(2.4) rotate(-3deg); opacity:1; }
+    100%{ transform:translate(-110%,-110%) scale(4) rotate(-6deg); opacity:0; }
+  }
+  @keyframes musoFlySpiral{
+    0%{ transform:scale(0.08) rotate(0deg); opacity:0; filter:blur(6px); }
+    16%{ opacity:0.85; }
+    45%{ transform:scale(1) rotate(180deg); opacity:1; filter:blur(0); }
+    70%{ transform:scale(2.6) rotate(300deg); opacity:1; }
+    100%{ transform:scale(4.6) rotate(380deg); opacity:0; }
+  }
+  @keyframes musoFlySwoop{
+    0%{ transform:translate(-170%,-20%) scale(0.6) rotate(-8deg); opacity:0; filter:blur(4px); }
+    16%{ opacity:1; }
+    45%{ transform:translate(0%,0%) scale(1.3) rotate(0deg); opacity:1; filter:blur(0); }
+    70%{ transform:translate(90%,-60%) scale(2.8) rotate(6deg); opacity:1; }
+    100%{ transform:translate(200%,-120%) scale(4) rotate(10deg); opacity:0; }
+  }
+
+  body.muso-shake{ animation:musoShake 0.32s ease-in-out; }
+  @keyframes musoShake{
+    0%,100%{ transform:translate(0,0); }
+    20%{ transform:translate(-3px,2px); }
+    40%{ transform:translate(3px,-2px); }
+    60%{ transform:translate(-2px,-2px); }
+    80%{ transform:translate(2px,2px); }
+  }
+</style>
 </head>
 <body>
+
+<div id="muso-stage" aria-hidden="true"></div>
+<button class="muso-toggle" id="musoToggle" type="button" title="Toggle Muso pop-ins" data-on="true">🎭</button>
 
 <div class="gate-overlay" id="gate-overlay">
   <div class="gate-card">
@@ -2210,5 +2382,186 @@
   };
 </script>
 
+<script>
+(function(){
+  const STAGE = document.getElementById('muso-stage');
+  const TOGGLE = document.getElementById('musoToggle');
+  const FALLBACK_IMG = 'assets/profile/shane-avatar.jpg';
+
+  // ---- Animation catalog -------------------------------------------------
+  // `sprite` is null until real sprite sheets exist. Fill one in as:
+  //   sprite: { src:'assets/sprites/peek-top.png', cols:4, rows:2, frameCount:7, fps:10 }
+  // cols/rows = the grid the sheet is laid out in, frameCount = how many
+  // of those cells are real frames (reading left-to-right, top-to-bottom),
+  // fps = playback speed. No pixel dimensions needed — frames are stretched
+  // to fill the on-screen box (120px circle for peeks, 340px card for
+  // fly-throughs), so keep each frame's own aspect square-ish.
+  const MUSO_PEEKS = [
+    { id:'peek-top',    anim:'musoPeekTop',    edge:'top',    sprite:null },
+    { id:'peek-bottom', anim:'musoPeekBottom', edge:'bottom', sprite:null },
+    { id:'peek-left',   anim:'musoPeekLeft',   edge:'left',   sprite:null },
+    { id:'peek-right',  anim:'musoPeekRight',  edge:'right',  sprite:null },
+  ];
+  // Fly-throughs: background -> foreground -> through the camera's plane
+  // of view. Each is a distinct flight path; add as many more as you like.
+  const MUSO_FLYTHROUGHS = [
+    { id:'fly-straight', anim:'musoFlyStraight',   dur:2.6, sprite:null },
+    { id:'fly-diag-tl',  anim:'musoFlyDiagonalTL', dur:2.8, sprite:null },
+    { id:'fly-diag-br',  anim:'musoFlyDiagonalBR', dur:2.8, sprite:null },
+    { id:'fly-spiral',   anim:'musoFlySpiral',     dur:3.0, sprite:null },
+    { id:'fly-swoop',    anim:'musoFlySwoop',      dur:2.4, sprite:null },
+  ];
+  const CALLOUT_STYLES = [
+    { text:'MUSO!',    css:'font-size:4.5rem; letter-spacing:1px; color:var(--coral);' },
+    { text:'muso~',    css:'font-size:2.4rem; font-style:italic; opacity:0.85; color:var(--teal);' },
+    { text:'MUSOOOO',  css:'font-size:5rem; color:var(--tangerine); letter-spacing:2px;' },
+    { text:'Muso?',    css:'font-size:3.2rem; color:var(--plum);' },
+    { text:'muso.',    css:'font-size:2rem; font-family:monospace; letter-spacing:6px; color:var(--deep-teal);' },
+  ];
+  const PEEK_TAGS = ['Muso!', 'hey!', '👋 Muso', "it's me"];
+
+  let enabled = localStorage.getItem('musoPopinsEnabled') !== 'off';
+  let lastId = null;
+  let timer = null;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setToggleUI(){
+    TOGGLE.dataset.on = String(enabled);
+    TOGGLE.textContent = enabled ? '🎭' : '🙈';
+  }
+  TOGGLE.addEventListener('click', () => {
+    enabled = !enabled;
+    localStorage.setItem('musoPopinsEnabled', enabled ? 'on' : 'off');
+    setToggleUI();
+    if (!enabled) clearTimeout(timer);
+    else scheduleNext(true);
+  });
+  setToggleUI();
+
+  function pick(arr){
+    let choice;
+    do { choice = arr[Math.floor(Math.random()*arr.length)]; }
+    while (arr.length > 1 && choice.id === lastId);
+    lastId = choice.id;
+    return choice;
+  }
+
+  // Drives an element's background through a sprite sheet's frames on a
+  // timer, independent of whatever CSS transform animation is moving it
+  // around. Returns the interval id (or null if running on the static
+  // fallback photo) so the caller can clear it on cleanup.
+  function applySprite(el, cfg){
+    if (!cfg.sprite){
+      el.style.backgroundImage = `url(${FALLBACK_IMG})`;
+      return null;
+    }
+    const s = cfg.sprite;
+    el.style.backgroundImage = `url(${s.src})`;
+    el.style.backgroundSize = `${s.cols*100}% ${s.rows*100}%`;
+    let frame = 0;
+    const setFrame = () => {
+      const col = frame % s.cols;
+      const row = Math.floor(frame / s.cols) % s.rows;
+      const posX = s.cols > 1 ? (col/(s.cols-1))*100 : 0;
+      const posY = s.rows > 1 ? (row/(s.rows-1))*100 : 0;
+      el.style.backgroundPosition = `${posX}% ${posY}%`;
+    };
+    setFrame();
+    return setInterval(() => { frame = (frame+1) % s.frameCount; setFrame(); }, 1000/s.fps);
+  }
+
+  function runPeek(){
+    const cfg = pick(MUSO_PEEKS);
+    const el = document.createElement('div');
+    el.className = 'muso-sprite is-peek';
+    el.style[cfg.edge] = '-120px'; // exactly the peek circle's own size (120px) -> fully hidden at rest
+    if (cfg.edge === 'top' || cfg.edge === 'bottom') el.style.left = (10 + Math.random()*70) + '%';
+    else el.style.top = (10 + Math.random()*70) + '%';
+    el.style.animation = `${cfg.anim} 3.4s ease-in-out forwards`;
+    const frameTimer = applySprite(el, cfg);
+    STAGE.appendChild(el);
+
+    const tag = document.createElement('div');
+    tag.className = 'muso-tag';
+    tag.textContent = PEEK_TAGS[Math.floor(Math.random()*PEEK_TAGS.length)];
+    STAGE.appendChild(tag);
+    requestAnimationFrame(() => {
+      const r = el.getBoundingClientRect();
+      tag.style.left = Math.max(8, r.left) + 'px';
+      tag.style.top = Math.max(8, r.top - 26) + 'px';
+      setTimeout(() => tag.style.opacity = '1', 500);
+      setTimeout(() => tag.style.opacity = '0', 2600);
+    });
+
+    el.addEventListener('animationend', () => {
+      if (frameTimer) clearInterval(frameTimer);
+      el.remove();
+      tag.remove();
+    });
+  }
+
+  function runFlythrough(){
+    const cfg = pick(MUSO_FLYTHROUGHS);
+    const style = CALLOUT_STYLES[Math.floor(Math.random()*CALLOUT_STYLES.length)];
+    document.documentElement.style.setProperty('--muso-dur', cfg.dur + 's');
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'muso-backdrop is-active';
+
+    const el = document.createElement('div');
+    el.className = 'muso-sprite is-fly';
+    el.style.animation = `${cfg.anim} ${cfg.dur}s cubic-bezier(.2,.7,.3,1) forwards`;
+    const frameTimer = applySprite(el, cfg);
+
+    const callout = document.createElement('div');
+    callout.className = 'muso-callout is-active';
+    callout.style.cssText += style.css;
+    callout.textContent = style.text;
+
+    STAGE.append(backdrop, el, callout);
+
+    setTimeout(() => {
+      document.body.classList.add('muso-shake');
+      setTimeout(() => document.body.classList.remove('muso-shake'), 340);
+    }, cfg.dur * 0.45 * 1000);
+
+    let done = false;
+    function cleanup(){
+      if (done) return;
+      done = true;
+      if (frameTimer) clearInterval(frameTimer);
+      backdrop.remove(); el.remove(); callout.remove();
+    }
+    backdrop.addEventListener('click', cleanup);
+    el.addEventListener('animationend', cleanup);
+    setTimeout(cleanup, cfg.dur*1000 + 400); // safety net
+  }
+
+  function fire(){
+    if (!enabled) return;
+    if (Math.random() < 0.72) runPeek(); else runFlythrough();
+    scheduleNext();
+  }
+
+  function scheduleNext(immediate){
+    clearTimeout(timer);
+    if (!enabled) return;
+    const gap = immediate ? 4000 + Math.random()*4000 : 22000 + Math.random()*35000;
+    timer = setTimeout(fire, gap);
+  }
+
+  if (!reduceMotion){
+    const start = () => {
+      window.removeEventListener('pointerdown', start);
+      window.removeEventListener('keydown', start);
+      window.removeEventListener('scroll', start);
+      scheduleNext(true);
+    };
+    window.addEventListener('pointerdown', start, { once:true });
+    window.addEventListener('keydown', start, { once:true });
+    window.addEventListener('scroll', start, { once:true, passive:true });
+  }
+})();
+</script>
 </body>
 </html>
